@@ -1,0 +1,146 @@
+
+# 🌿 Fiber Language — Comprehensive Keyword List with Concepts and Descriptions
+
+## 1. Core Language and Control
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| var | Variable declaration | Declares a mutable variable |
+| const | Constant declaration | Declares an immutable variable |
+| static | Shared scope variable | Value shared across all instances or scopes |
+| final | Assignment restriction | Value can only be assigned once |
+| def | Function definition | Defines a reusable block of logic |
+| class | Object definition | Defines a class or blueprint |
+| struct | Lightweight data container | Defines a structured type with fields |
+| enum | Enumeration | Defines symbolic constants |
+| if / elif / else | Conditional flow | Standard branching logic |
+| while | Loop | Executes while condition is true |
+| for | Iteration | Standard or range-based loop |
+| break | Loop control | Exits loop immediately |
+| continue | Loop control | Skips to next iteration |
+| return | Function exit | Returns a value from a function |
+| import / from / as | Module management | Imports code from other files |
+| try / catch / finally | Error handling | Handles and manages exceptions |
+| throw | Raise exception | Manually triggers an error |
+| assert | Runtime check | Verifies condition validity |
+| pass | Placeholder | No-op, used for syntactic completeness |
+
+---
+
+## 2. AI, Logic, and Reasoning
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| infer | AI inference | Runs reasoning or inference operation |
+| train | Machine learning | Trains a model using data |
+| predict | Inference | Runs model prediction |
+| learn | Adaptive logic | Allows a system to adapt dynamically |
+| evolve | Meta-learning | Modifies model or parameters over time |
+| derive | Symbolic differentiation | Computes derivative expressions |
+| observe | Monitoring | Logs or inspects values at runtime |
+| context | Scoped AI environment | Defines a specific operational context |
+| memory | Persistent cache | Stores or retrieves persistent data |
+| rule | Declarative logic | Defines logical inference rules |
+| when | Declarative condition | Defines logical condition trigger |
+| decide | Decision logic | Chooses based on evaluated logic |
+| belief | Probabilistic truth | Represents uncertainty or confidence |
+| truth / falsehood | Logical constants | Represent true/false in reasoning context |
+| logic | Logic mode | Defines type of reasoning (symbolic, fuzzy, etc.) |
+| constraint | Optimization constraint | Defines limits for optimization problems |
+| objective | Optimization target | Defines what to minimize/maximize |
+| optimize | Optimization operation | Runs optimization or solver |
+
+---
+
+## 3. Graphs, Networks, and Relations
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| graph | Graph declaration | Defines a graph structure |
+| node | Graph component | Defines a node within a graph |
+| edge | Graph connection | Defines an edge between nodes |
+| link | Graph relation | Connects two nodes declaratively |
+| connect | Graph connection | Similar to link, imperative form |
+| path | Graph traversal | Defines traversal or route |
+| neighbors | Graph query | Retrieves connected nodes |
+| flow | Data flow | Represents graph data flow |
+| network | Graph collection | Defines a higher-level graph system |
+| signal | Data signal | Transmits data between nodes |
+| propagate | Flow operation | Passes computation through graph |
+
+---
+
+## 4. Symbolic Computation and Expressions
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| expr | Expression literal | Defines symbolic or mathematical expression |
+| symbol | Symbolic variable | Declares a symbolic placeholder |
+| simplify | Algebra simplification | Simplifies symbolic expressions |
+| substitute | Replacement | Substitutes variables in expressions |
+| differentiate | Derivative | Computes derivative w.r.t variable |
+| integrate | Integral | Performs symbolic integration |
+| evaluate / eval | Expression evaluation | Evaluates numeric or symbolic expression |
+| expand | Algebra expansion | Expands polynomial expressions |
+| solve | Equation solving | Finds variable solutions |
+| matrix | Algebra structure | Declares or manipulates a matrix |
+| tensor | High-dimensional structure | Supports AI tensor operations |
+| dimension | Shape utility | Defines or queries structure dimensions |
+| compose | Expression composition | Combines multiple expressions |
+
+---
+
+## 5. State, Memory, and Scope Modifiers
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| mutable | Variable mutability | Declares explicitly mutable variable |
+| immutable | Variable immutability | Locks variable against change |
+| volatile | Dynamic state | Marks variable as rapidly changing |
+| lazy | Deferred evaluation | Evaluates when first accessed |
+| cache | Cached computation | Saves results for reuse |
+| shared | Shared memory | Accessible by concurrent scopes |
+| sync | Synchronous execution | Ensures operation completes before proceeding |
+| async | Asynchronous execution | Enables parallel or deferred task execution |
+| yield | Iteration control | Returns intermediate values in generators |
+| await | Async control | Waits for async result completion |
+
+---
+
+## 6. Meta-programming and Reflection
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| meta | Meta-layer block | Code that manipulates code or AST |
+| reflect | Reflection | Introspects environment or AST |
+| type | Type inspection | Returns data type of value |
+| is | Type check | Checks if variable matches type |
+| has | Property check | Verifies object has a field |
+| define | Macro definition | Defines new macro or function |
+| macro | Compile-time macro | Generates code dynamically |
+| pragma | Compiler directive | Provides optimization or metadata hint |
+
+---
+
+## 7. AI and Data Domain DSL Extensions
+
+| Keyword | Concept | Description |
+|----------|----------|-------------|
+| model | AI model declaration | Defines or loads a model |
+| dataset | Dataset declaration | Declares a dataset for training/inference |
+| feature | Feature variable | Declares input features |
+| target | Label variable | Declares output target |
+| metric | Evaluation metric | Declares performance metric (e.g., accuracy) |
+| evaluate | Evaluation | Tests model on dataset |
+| goal | Optimization target | Defines goal (minimize loss, etc.) |
+| epoch | Iteration unit | Loop unit in training |
+| batch | Data batch | Subset of data for training |
+| trace | Logging utility | Records symbolic or numeric operations |
+| vision | AI design directive | Used to declare AI context or philosophy |
+| reason | Reasoning step | Executes symbolic reasoning process |
+| belief | AI confidence | Expresses probabilistic truth state |
+| intent | AI intent | Describes purpose or goal of logic |
+| state | System state | Declares FSM or control state |
+| token | NLP token | Unit in text processing |
+| embed | Embedding | Defines or applies embedding vector |
+| graphlet | Subgraph | Defines or manipulates small graph unit |

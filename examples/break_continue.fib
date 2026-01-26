@@ -1,0 +1,14 @@
+print "Testing break and continue:"
+
+for i = 1 to 10 {
+    if i == 5 {
+        print "Breaking at " + str(i)
+        break
+    }
+    if i % 2 == 0 {
+        continue
+    }
+    print "Odd number: " + str(i)
+}
+
+print "Done!"

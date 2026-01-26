@@ -1,0 +1,12 @@
+var data = [1, 2, 3]
+append(data, 4)
+print "List: " + str(data)
+print "Length: " + str(len(data))
+print "Second element: " + str(data[1])
+
+data[1] = 10
+print "Modified: " + str(data)
+
+for x in data step 2 {
+    print "Item: " + str(x)
+}

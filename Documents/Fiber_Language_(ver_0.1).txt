@@ -1,0 +1,133 @@
+
+Fiber Programming Language — Feature Summary
+============================================
+
+1. Core Syntax
+--------------
+- Statements end by newline or block delimiters `{ ... }`
+- Supports expressions, variables, conditionals, loops, functions, and classes
+- Whitespace is flexible; indentation is not syntax-significant
+
+2. Data Types
+-------------
+- Number (integer and float)
+- String (supports escapes like \n, \", etc.)
+- Boolean (`true`, `false`)
+- Null-like behavior via uninitialized `var`
+
+3. Variables
+------------
+- Declared with: `var name` or `var name = expr`
+- Assignment: `name = expr`
+- Variables are dynamically typed
+
+4. Operators
+------------
+- Arithmetic: `+`, `-`, `*`, `/`
+- Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Logical: `and`, `or`, `not`
+- Unary minus: `-expr`
+- Supports string concatenation and repetition (`"x" * 3`)
+
+5. Control Flow
+---------------
+- `if (condition) { ... } else { ... }`
+- `while (condition) { ... }`
+- `return expr` within functions
+
+6. Functions
+------------
+- Defined using:
+  ```
+  def name(param1, param2) {
+      ...
+      return value
+  }
+  ```
+- First-class citizens (can be stored, passed, or called dynamically)
+- Support closure (via `Environment` scope chaining)
+- Built-in functions: `print()`, `input()`, `int()`, `float()`, `str()`
+
+7. Classes and Objects
+----------------------
+- Declared with:
+  ```
+  class Name {
+      def init(param) { this.field = param }
+      def method() { print(this.field) }
+  }
+  ```
+- Instance creation: `var obj = Name()`
+- Supports single inheritance: `class Child extends Parent { ... }`
+- Member access: `obj.field`, `obj.method()`
+- Assignment to members: `obj.field = value`
+- `this` keyword inside methods
+- Implicit `init()` constructor (called if defined)
+
+8. Scope & Environment
+----------------------
+- Lexical scoping with nested `Environment` objects
+- Functions and methods capture their defining environment (closures)
+- `set_local` for declaring in current scope
+- `set_upwards` for assigning to parent scope
+
+9. Builtins and Type Conversion
+-------------------------------
+- `print(value)` — prints output
+- `input(prompt)` — reads user input
+- `int(x)` — converts string/float to int (with numeric check)
+- `float(x)` — converts to float
+- `str(x)` — converts to string
+
+10. Error Handling
+------------------
+- Syntax Errors → `FiberSyntaxError`
+- Name Errors → `FiberNameError`
+- Runtime Errors → `FiberRuntimeError`
+- Unhandled errors print descriptive messages
+
+11. REPL and Execution
+----------------------
+- Run interactively via REPL:
+  ```
+  python -m fiber.main
+  ```
+- Run files:
+  ```
+  python -m fiber.main script.fib
+  ```
+- REPL supports multi-line statements and incremental input parsing
+
+12. Architecture
+----------------
+- **Lexer:** Tokenizes Fiber code into structured tokens
+- **Parser:** Builds AST (`Program`, `VarAssign`, `ClassDef`, etc.)
+- **Interpreter:** Walks AST and executes code
+- **Environment:** Handles scope and variable resolution
+- **Objects:** Implement function, class, and instance behavior
+
+13. Example Code
+----------------
+```
+class Greeter {
+    def init(name) {
+        this.name = name
+    }
+    def greet() {
+        print("Hello, " + this.name)
+    }
+}
+
+var g = Greeter("Fiber")
+g.greet()
+```
+
+Output:
+```
+Hello, Fiber
+```
+
+-------------------------------------------
+Version: 0.1
+Author: Daksh Gehlot
+Language Family: Dynamic, Interpreted, Object-Oriented, Expression-based

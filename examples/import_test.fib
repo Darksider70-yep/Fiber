@@ -1,0 +1,17 @@
+# Basic import
+import utils
+print "PI from utils: " + str(utils["PI"])
+utils["greet"]("Daksh")
+
+# Import with alias
+import utils as u
+u["greet"]("Fiber")
+
+# Selective import
+from utils import add
+print "Sum: " + str(add(3, 4))
+
+# Import all
+from utils import *
+print "Global PI: " + str(PI)
+greet("Direct call")

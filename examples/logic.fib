@@ -1,0 +1,16 @@
+var x = 5
+var y = 10
+var z = false
+
+if (x < 10 and y != 5) or not z {
+    print "Condition passed"
+} else {
+    print "Condition failed"
+}
+
+var n = input("Enter age: ")
+if n >= 18 and n <= 60 {
+    print "Adult"
+} else {
+    print "Not adult"
+}

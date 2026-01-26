@@ -1,0 +1,41 @@
+# ---------- BASIC THROW / CATCH ----------
+try {
+    print "Before error"
+    throw "Manual error!"
+    print "After throw"  # will not run
+} catch e {
+    print "Caught exception: " + e
+} finally {
+    print "Finally executed"
+}
+
+# ---------- ASSERT TEST ----------
+var x = 10
+assert x > 0, "x must be positive"
+print "Assert passed!"
+
+x = -5
+try {
+    assert x > 0, "x must be positive"
+} catch err {
+    print "Assertion failed: " + err
+}
+
+# ---------- NESTED TRY BLOCK ----------
+try {
+    print "Outer try start"
+    try {
+        throw "Inner error"
+    } catch inner {
+        print "Inner caught: " + inner
+        throw "Escalating error"
+    } finally {
+        print "Inner finally"
+    }
+} catch outer {
+    print "Outer caught: " + outer
+} finally {
+    print "Outer finally"
+}
+
+print "Program completed!"

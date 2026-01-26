@@ -1,0 +1,16 @@
+const PI = 3.1415
+final limit = 10
+static counter = 0
+var i = 0
+
+print "PI: " + str(PI)
+print "Limit: " + str(limit)
+
+for i = 1 to 5 {
+    counter = counter + 1
+}
+print "Counter: " + str(counter)
+
+
+limit = 20 
+PI = 4      

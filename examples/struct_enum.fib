@@ -1,0 +1,26 @@
+
+struct Point {
+    x
+    y
+}
+
+var p = Point(10, 20)
+print "Point x: " + str(p.x)
+print "Point y: " + str(p.y)
+
+p.x = 5
+print "Modified Point: " + str(p.x) + ", " + str(p.y)
+
+enum Mode {
+    TRAIN
+    TEST
+    VALIDATE
+}
+
+print "Mode TRAIN: " + str(Mode.TRAIN)
+print "Mode TEST: " + str(Mode.TEST)
+
+var current = Mode.TRAIN
+if current == Mode.TRAIN {
+    print "Training mode active"
+}

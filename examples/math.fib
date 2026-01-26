@@ -1,0 +1,15 @@
+
+var a = 23
+var b = 5
+
+var sum = a + b
+var diff = a - b
+var prod = a * b
+var quot = a / b
+
+print "Sum: " + sum
+print "Difference: " + diff
+print "Product: " + prod
+print "Quotient: " + quot
+print "completed!!!"
+

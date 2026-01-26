@@ -1,0 +1,18 @@
+class Animal {
+    def init(name) {
+        this.name = name
+    }
+
+    def speak() {
+        print "<" + this.name + "> makes a sound"
+    }
+}
+
+class Dog extends Animal {
+    def speak() {
+        print "<" + this.name + "> bark!\n"
+    }
+}
+
+var d = Dog("Spike")
+print d.speak()
