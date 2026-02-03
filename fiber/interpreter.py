@@ -5,6 +5,7 @@ from .errors import FiberNameError, FiberRuntimeError
 import os
 from .lexer import tokenize
 from .parser import Parser
+from .dsa import FiberStack, FiberQueue, FiberSet
 
 
 class BreakSignal(Exception): pass
@@ -23,6 +24,12 @@ class Interpreter:
         self.global_env.set_local('len', lambda x: len(x))
         self.global_env.set_local('append', lambda arr, val: (arr.append(val), arr)[1])
         self.global_env.set_local('range', lambda start, end=None, step=None: list(range(int(start), int(end) if end is not None else int(start), int(step) if step is not None else 1)) if end is not None else list(range(int(start))))
+                # -----------------------------
+        # Native Data Structures (DSA)
+        # -----------------------------
+        self.global_env.set_local("Stack", FiberStack)
+        self.global_env.set_local("Queue", FiberQueue)
+        self.global_env.set_local("Set", FiberSet)
 
     def interpret(self, program: Program):
         return self.exec_block(program.stmts, self.global_env)
