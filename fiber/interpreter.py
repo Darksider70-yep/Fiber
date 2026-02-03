@@ -477,23 +477,30 @@ class Interpreter:
             if isinstance(callee, MemberAccess):
                 target = self.eval_expr(callee.obj, env)
                 name = callee.name
+                args = [self.eval_expr(a, env) for a in node.args]
+
+                # Fiber class instance
                 if isinstance(target, FiberInstance):
                     method = target.klass.find_method(name)
-                    if not method:
-                        maybe = target.fields.get(name)
-                        if callable(maybe):
-                            args = [self.eval_expr(a, env) for a in node.args]
-                            return maybe(*args)
-                        raise FiberNameError(f"Method {name} not found")
-                    args = [self.eval_expr(a, env) for a in node.args]
-                    return method.call(self, args, this=target)
+                    if method:
+                        return method.call(self, args, this=target)
+                    if name in target.fields and callable(target.fields[name]):
+                        return target.fields[name](*args)
+                    raise FiberNameError(f"Method {name} not found")
+
+                # Dict member
                 if isinstance(target, dict):
-                    maybe = target.get(name)
-                    if callable(maybe):
-                        args = [self.eval_expr(a, env) for a in node.args]
-                        return maybe(*args)
+                    member = target.get(name)
+                    if callable(member):
+                        return member(*args)
                     raise FiberNameError(f"Member {name} not callable on dict")
-                raise FiberRuntimeError("Member call on non-instance")
+
+                # ✅ Native runtime object (DSA, future VM objects)
+                attr = getattr(target, name, None)
+                if callable(attr):
+                    return attr(*args)
+
+                raise FiberRuntimeError("Member call on unsupported object")
 
         if isinstance(node, MemberAccess):
             obj = self.eval_expr(node.obj, env)
