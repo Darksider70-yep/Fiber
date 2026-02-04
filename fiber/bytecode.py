@@ -8,14 +8,18 @@ from .errors import FiberRuntimeError
 # ============================================================
 
 class OpCode(IntEnum):
-    LOAD_CONST = 1     # push constant onto stack
-    ADD        = 2
-    SUB        = 3
-    MUL        = 4
-    DIV        = 5
-    NEGATE    = 6
-    PRINT     = 7
-    RETURN    = 8
+    LOAD_CONST = 1
+    LOAD_NAME  = 2     # push variable value
+    STORE_NAME = 3     # pop → variable
+
+    ADD        = 10
+    SUB        = 11
+    MUL        = 12
+    DIV        = 13
+    NEGATE    = 14
+
+    PRINT     = 20
+    RETURN    = 21
 
 
 # ============================================================
@@ -24,12 +28,18 @@ class OpCode(IntEnum):
 
 class Chunk:
     def __init__(self):
-        self.code = []        # list of (opcode, operand)
-        self.constants = []   # constant pool
+        self.code = []
+        self.constants = []
+        self.names = []   # 🔹 NEW
 
     def add_const(self, value):
         self.constants.append(value)
         return len(self.constants) - 1
+
+    def add_name(self, name):
+        if name not in self.names:
+            self.names.append(name)
+        return self.names.index(name)
 
     def emit(self, opcode, operand=None):
         self.code.append((opcode, operand))
@@ -42,7 +52,8 @@ class Chunk:
 class VirtualMachine:
     def __init__(self):
         self.stack = []
-        self.ip = 0           # instruction pointer
+        self.ip = 0
+        self.globals = {}           # instruction pointer
 
     def run(self, chunk: Chunk):
         self.ip = 0
@@ -96,6 +107,16 @@ class VirtualMachine:
             # -----------------------------
             elif opcode == OpCode.RETURN:
                 return self.stack.pop() if self.stack else None
+            
+            elif opcode == OpCode.LOAD_NAME:
+                name = chunk.names[operand]
+                if name not in self.globals:
+                    raise FiberRuntimeError(f"Undefined variable '{name}'")
+                self.stack.append(self.globals[name])
+
+            elif opcode == OpCode.STORE_NAME:
+                name = chunk.names[operand]
+                self.globals[name] = self.stack.pop()
 
             else:
                 raise FiberRuntimeError(f"Unknown opcode: {opcode}")
