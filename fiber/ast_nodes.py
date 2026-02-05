@@ -135,7 +135,6 @@ class ListLiteral(Node):
     def __init__(self, elements):
         self.elements = elements
 
-# new nodes
 class StructDef(Node):
     def __init__(self, name, fields):
         self.name = name
@@ -147,10 +146,6 @@ class EnumDef(Node):
         self.values = values
 
 class TryCatchFinally(Node):
-    # try_block: list of stmts
-    # catch_var: optional name (string) or None
-    # catch_block: list of stmts or None
-    # finally_block: list of stmts or None
     def __init__(self, try_block, catch_var=None, catch_block=None, finally_block=None):
         self.try_block = try_block
         self.catch_var = catch_var
