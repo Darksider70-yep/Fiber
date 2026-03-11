@@ -3,6 +3,8 @@ from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal
 from .environment import Environment
 from .errors import FiberNameError, FiberRuntimeError
 import os
+import re
+import sys
 from .lexer import tokenize
 from .parser import Parser
 from .dsa import FiberStack, FiberQueue, FiberSet
@@ -11,9 +13,14 @@ from .dsa import FiberStack, FiberQueue, FiberSet
 class BreakSignal(Exception): pass
 class ContinueSignal(Exception): pass
 
+MODULE_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
 class Interpreter:
     def __init__(self):
         self.global_env = Environment()
+        self.module_cache = {}
+        self.exec_dir_stack = [os.getcwd()]
 
         # Builtins
         self.global_env.set_local('print', print)
@@ -24,15 +31,102 @@ class Interpreter:
         self.global_env.set_local('len', lambda x: len(x))
         self.global_env.set_local('append', lambda arr, val: (arr.append(val), arr)[1])
         self.global_env.set_local('range', lambda start, end=None, step=None: list(range(int(start), int(end) if end is not None else int(start), int(step) if step is not None else 1)) if end is not None else list(range(int(start))))
-                # -----------------------------
+
+        # -----------------------------
         # Native Data Structures (DSA)
         # -----------------------------
         self.global_env.set_local("Stack", FiberStack)
         self.global_env.set_local("Queue", FiberQueue)
         self.global_env.set_local("Set", FiberSet)
 
+    def _validate_module_name(self, module_name):
+        if not MODULE_NAME_RE.match(module_name):
+            raise FiberRuntimeError(f"Invalid module name '{module_name}'")
+
+    def _find_module_file(self, module_name):
+        self._validate_module_name(module_name)
+        filename = f"{module_name}.fib"
+        current_exec_dir = self.exec_dir_stack[-1] if self.exec_dir_stack else os.getcwd()
+        search_paths = []
+        for candidate in (
+            current_exec_dir,
+            os.path.join(current_exec_dir, "lib"),
+            os.getcwd(),
+            os.path.join(os.getcwd(), "lib"),
+            os.path.dirname(__file__),
+        ):
+            if candidate not in search_paths:
+                search_paths.append(candidate)
+
+        for path in search_paths:
+            root = os.path.abspath(path)
+            candidate = os.path.abspath(os.path.join(root, filename))
+            try:
+                if os.path.commonpath([candidate, root]) != root:
+                    continue
+            except ValueError:
+                continue
+            if os.path.isfile(candidate):
+                return candidate
+
+        raise FiberRuntimeError(f"Module '{module_name}' not found")
+
+    def _load_module_symbols(self, module_name):
+        cached = self.module_cache.get(module_name, "__missing__")
+        if cached == "__loading__":
+            raise FiberRuntimeError(f"Circular import detected for module '{module_name}'")
+        if cached != "__missing__":
+            return dict(cached)
+
+        self.module_cache[module_name] = "__loading__"
+        try:
+            file_path = self._find_module_file(module_name)
+            with open(file_path, "r", encoding="utf-8") as f:
+                source = f.read().replace("\r\n", "\n").replace("\r", "\n")
+            if not source.endswith("\n"):
+                source += "\n"
+
+            tokens = tokenize(source)
+            module_ast = Parser(tokens, filename=file_path).parse()
+            module_env = Environment(self.global_env)
+            self.exec_dir_stack.append(os.path.dirname(file_path))
+            try:
+                self.exec_block(module_ast.stmts, module_env)
+            finally:
+                self.exec_dir_stack.pop()
+
+            symbols = dict(module_env)
+            self.module_cache[module_name] = dict(symbols)
+            return symbols
+        except Exception:
+            if module_name in self.module_cache and self.module_cache[module_name] == "__loading__":
+                del self.module_cache[module_name]
+            raise
+
+    def _find_env_containing(self, env, name):
+        current = env
+        while current is not None:
+            if name in current:
+                return current
+            current = current.parent
+        return None
+
     def interpret(self, program: Program):
-        return self.exec_block(program.stmts, self.global_env)
+        filename = getattr(program, "filename", None)
+        if filename:
+            exec_dir = os.path.dirname(os.path.abspath(filename))
+        else:
+            exec_dir = os.getcwd()
+            if len(sys.argv) > 1:
+                arg_path = os.path.abspath(sys.argv[1])
+                if arg_path.lower().endswith(".fib"):
+                    exec_dir = os.path.dirname(arg_path)
+
+        self.exec_dir_stack.append(exec_dir)
+        try:
+            return self.exec_block(program.stmts, self.global_env)
+        finally:
+            self.exec_dir_stack.pop()
 
     def exec_block(self, stmts, env):
         last = None
@@ -52,78 +146,23 @@ class Interpreter:
         # IMPORT SYSTEM
         # -----------------------------
         if isinstance(node, Import):
-            module_name = node.module_name
-            alias = node.alias or module_name
-            filename = f"{module_name}.fib"
-
-            search_paths = [
-                os.getcwd(),
-                os.path.join(os.getcwd(), "lib"),
-                os.path.dirname(__file__)
-            ]
-
-            file_path = None
-            for path in search_paths:
-                candidate = os.path.join(path, filename)
-                if os.path.exists(candidate):
-                    file_path = candidate
-                    break
-
-            if not file_path:
-                raise FiberRuntimeError(f"Module '{module_name}' not found")
-
-            with open(file_path, "r", encoding="utf-8") as f:
-                source = f.read().replace("\r\n", "\n").replace("\r", "\n").strip() + "\n"
-
-            # tokenize, parse, execute module in a new environment
-            tokens = tokenize(source)
-            p = Parser(tokens, filename=file_path)
-            module_ast = p.parse()
-            module_env = Environment(self.global_env)
-            self.exec_block(module_ast.stmts, module_env)
-
-            # store module's environment in current environment
-            env.set_local(alias, module_env.store)
+            symbols = self._load_module_symbols(node.module_name)
+            alias = node.alias or node.module_name
+            env.set_local(alias, dict(symbols))
             return None
 
         if isinstance(node, ImportFrom):
-            module_name = node.module_name
-            filename = f"{module_name}.fib"
-
-            search_paths = [
-                os.getcwd(),
-                os.path.join(os.getcwd(), "lib"),
-                os.path.dirname(__file__)
-            ]
-
-            file_path = None
-            for path in search_paths:
-                candidate = os.path.join(path, filename)
-                if os.path.exists(candidate):
-                    file_path = candidate
-                    break
-
-            if not file_path:
-                raise FiberRuntimeError(f"Module '{module_name}' not found")
-
-            with open(file_path, "r", encoding="utf-8") as f:
-                source = f.read().replace("\r\n", "\n").replace("\r", "\n").strip() + "\n"
-
-            tokens = tokenize(source)
-            p = Parser(tokens, filename=file_path)
-            module_ast = p.parse()
-            module_env = Environment(self.global_env)
-            self.exec_block(module_ast.stmts, module_env)
+            symbols = self._load_module_symbols(node.module_name)
 
             if node.import_all:
-                for name, value in module_env.store.items():
+                for name, value in symbols.items():
                     env.set_local(name, value)
             else:
                 for name in node.names:
-                    if name in module_env.store:
-                        env.set_local(name, module_env.store[name])
+                    if name in symbols:
+                        env.set_local(name, symbols[name])
                     else:
-                        raise FiberRuntimeError(f"Name '{name}' not found in module '{module_name}'")
+                        raise FiberRuntimeError(f"Name '{name}' not found in module '{node.module_name}'")
             return None
 
         # Print
@@ -149,11 +188,14 @@ class Interpreter:
             val = self.eval_expr(node.expr, env)
 
             if node.const:
-                if node.name in getattr(self.global_env, 'constants', set()):
+                target_env = env if node.declare else self.global_env
+                if node.name in target_env:
+                    raise FiberRuntimeError(f"Cannot redeclare '{node.name}' as constant")
+                if node.name in getattr(target_env, 'constants', set()):
                     raise FiberRuntimeError(f"Cannot redefine constant '{node.name}'")
-                self.global_env.set_local(node.name, val)
-                self.global_env.constants = getattr(self.global_env, 'constants', set())
-                self.global_env.constants.add(node.name)
+                target_env.set_local(node.name, val)
+                target_env.constants = getattr(target_env, 'constants', set())
+                target_env.constants.add(node.name)
                 return val
 
             if node.static:
@@ -163,12 +205,25 @@ class Interpreter:
                 return val
 
             if node.final:
+                if node.name in env:
+                    raise FiberRuntimeError(f"Cannot redeclare final variable '{node.name}'")
                 if node.name in getattr(env, 'finals', set()):
                     raise FiberRuntimeError(f"Final variable '{node.name}' cannot be reassigned")
                 env.set_local(node.name, val)
                 env.finals = getattr(env, 'finals', set())
                 env.finals.add(node.name)
                 return val
+
+            if node.declare:
+                env.set_local(node.name, val)
+                return val
+
+            owner_env = self._find_env_containing(env, node.name)
+            if owner_env is not None:
+                if node.name in getattr(owner_env, 'constants', set()):
+                    raise FiberRuntimeError(f"Cannot reassign constant '{node.name}'")
+                if node.name in getattr(owner_env, 'finals', set()):
+                    raise FiberRuntimeError(f"Final variable '{node.name}' cannot be reassigned")
 
             env.set_upwards(node.name, val)
             return val
@@ -233,42 +288,39 @@ class Interpreter:
 
         # Try/Catch/Finally
         if isinstance(node, TryCatchFinally):
-            # execute try block
             try:
                 self.exec_block(node.try_block, Environment(env))
-            except Exception as e:
-                # if a catch block exists, run it with the exception value bound
-                if node.catch_block is not None:
-                    catch_env = Environment(env)
-                    if node.catch_var:
-                        # bind the exception object (stringified) to catch_var
-                        catch_env.set_local(node.catch_var, str(e))
-                    try:
-                        self.exec_block(node.catch_block, catch_env)
-                    except ReturnSignal:
-                        raise
-                    except Exception as inner_exc:
-                        # if catch raises, propagate unless finally handles it
-                        exc_to_propagate = inner_exc
-                        # run finally then re-raise
-                        if node.finally_block:
-                            try:
-                                self.exec_block(node.finally_block, Environment(env))
-                            except Exception as fin_e:
-                                raise fin_e
-                        raise exc_to_propagate
-                else:
-                    # no catch — finally runs and then re-raise
-                    if node.finally_block:
-                        try:
-                            self.exec_block(node.finally_block, Environment(env))
-                        except Exception as fin_e:
-                            raise fin_e
-                    raise
-            else:
-                # normal completion — run finally if present
+            except (ReturnSignal, BreakSignal, ContinueSignal):
                 if node.finally_block:
                     self.exec_block(node.finally_block, Environment(env))
+                raise
+            except Exception as e:
+                if node.catch_block is None:
+                    if node.finally_block:
+                        self.exec_block(node.finally_block, Environment(env))
+                    raise
+
+                catch_env = Environment(env)
+                if node.catch_var:
+                    catch_env.set_local(node.catch_var, str(e))
+
+                try:
+                    self.exec_block(node.catch_block, catch_env)
+                except (ReturnSignal, BreakSignal, ContinueSignal):
+                    if node.finally_block:
+                        self.exec_block(node.finally_block, Environment(env))
+                    raise
+                except Exception:
+                    if node.finally_block:
+                        self.exec_block(node.finally_block, Environment(env))
+                    raise
+
+                if node.finally_block:
+                    self.exec_block(node.finally_block, Environment(env))
+                return None
+
+            if node.finally_block:
+                self.exec_block(node.finally_block, Environment(env))
             return None
 
         # Throw
@@ -290,10 +342,14 @@ class Interpreter:
             cond_val = bool(self.eval_expr(node.cond, env))
             if cond_val:
                 return self.exec_block(node.then_branch, Environment(env))
-            elif node.else_branch:
-                if isinstance(node.else_branch, list) and isinstance(node.else_branch[0], If):
-                    return self.exec_stmt(node.else_branch[0], env)
-                return self.exec_block(node.else_branch, Environment(env))
+            if node.else_branch is None:
+                return None
+            if isinstance(node.else_branch, If):
+                return self.exec_stmt(node.else_branch, env)
+            return self.exec_block(node.else_branch, Environment(env))
+
+        # Pass
+        if isinstance(node, Pass):
             return None
 
         # While
@@ -313,6 +369,10 @@ class Interpreter:
             start_val = self.eval_expr(node.start, env)
             end_val = self.eval_expr(node.end, env)
             step_val = self.eval_expr(node.step, env)
+            if not isinstance(step_val, (int, float)):
+                raise FiberRuntimeError("Step value must be a number")
+            if step_val == 0:
+                raise FiberRuntimeError("Step value cannot be zero")
             i = start_val
             env.set_local(node.var, i)
             while (step_val > 0 and i <= end_val) or (step_val < 0 and i >= end_val):
@@ -334,13 +394,18 @@ class Interpreter:
             step_val = self.eval_expr(node.step, env) if hasattr(node, "step") else 1
             if not isinstance(step_val, (int, float)):
                 raise FiberRuntimeError("Step value must be a number")
+            if isinstance(step_val, bool) or int(step_val) != step_val:
+                raise FiberRuntimeError("Step value must be a whole number")
+            step_int = int(step_val)
+            if step_int <= 0:
+                raise FiberRuntimeError("Step value must be greater than zero")
+            env.set_local(node.var, None)
             for i, item in enumerate(iterable_val):
-                if i % int(step_val) != 0:
+                if i % step_int != 0:
                     continue
-                loop_env = Environment(env)
-                loop_env.set_upwards(node.var, item)
+                env.set_upwards(node.var, item)
                 try:
-                    self.exec_block(node.body, loop_env)
+                    self.exec_block(node.body, Environment(env))
                 except BreakSignal:
                     break
                 except ContinueSignal:

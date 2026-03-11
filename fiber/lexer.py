@@ -40,7 +40,7 @@ TOKEN_SPEC = [
     # Names & whitespace
     ("NAME", r"[A-Za-z_][A-Za-z0-9_]*"),
     ("NEWLINE", r"\n"),
-    ('SKIP', r"[ \t]+(?=[^\n])"),
+    ("SKIP", r"[ \t]+"),
     ("MISMATCH", r"."),
 ]
 
@@ -52,6 +52,7 @@ KEYWORDS = {
     "and", "or", "not", "true", "false",
     "break", "continue", "pass",
     "try", "catch", "finally", "throw", "assert",
+    "import", "from", "as", "this",
 }
 
 # We'll insert a comment pattern manually while scanning (simple approach)
@@ -59,6 +60,7 @@ MASTER = re.compile("|".join("(?P<%s>%s)" % pair for pair in TOKEN_SPEC))
 
 
 def tokenize(code: str):
+    code = code.replace("\r\n", "\n").replace("\r", "\n")
     line = 1
     tokens = []
     i = 0
@@ -73,9 +75,9 @@ def tokenize(code: str):
                 # rest is comment — finish
                 break
             else:
-                i = j + 1
-                line += 1
                 tokens.append(Token("NEWLINE", "\n", line))
+                line += 1
+                i = j + 1
                 continue
 
         mo = MASTER.match(code, i)

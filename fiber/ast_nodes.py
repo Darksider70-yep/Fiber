@@ -4,8 +4,9 @@ class Node:
     pass
 
 class Program(Node):
-    def __init__(self, stmts):
+    def __init__(self, stmts, filename=None):
         self.stmts = stmts
+        self.filename = filename
 
 class Number(Node):
     def __init__(self, value):
@@ -24,12 +25,13 @@ class VarDecl(Node):
         self.name = name
 
 class VarAssign(Node):
-    def __init__(self, name, expr, const=False, final=False, static=False):
+    def __init__(self, name, expr, const=False, final=False, static=False, declare=False):
         self.name = name
         self.expr = expr
         self.const = const
         self.final = final
         self.static = static
+        self.declare = declare
 
 class VarRef(Node):
     def __init__(self, name):
@@ -91,6 +93,9 @@ class Break(Node):
     pass
 
 class Continue(Node):
+    pass
+
+class Pass(Node):
     pass
 
 class MemberAccess(Node):

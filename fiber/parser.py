@@ -17,32 +17,26 @@ class Parser:
     def eat(self, typ=None):
         tok = self.current()
         if typ and tok.type != typ:
-            raise FiberSyntaxError(
-                f"Expected {typ}, got {tok.type} at line {tok.line}"
-            )
+            raise FiberSyntaxError(f"Expected {typ}, got {tok.type} at line {tok.line}")
         self.i += 1
         return tok
+
+    def skip_newlines(self):
+        while self.current().type == "NEWLINE":
+            self.eat("NEWLINE")
 
     # -------------------------------------------------
     # ENTRY POINT
     # -------------------------------------------------
     def parse(self):
         stmts = []
-
-        while self.current().type == "NEWLINE":
-            self.eat("NEWLINE")
+        self.skip_newlines()
 
         while self.current().type != "EOF":
             stmts.append(self.statement())
-            while self.current().type == "NEWLINE":
-                self.eat("NEWLINE")
+            self.skip_newlines()
 
-        if self.current().type != "EOF":
-            raise FiberSyntaxError(
-                f"Unexpected token {self.current().type} at line {self.current().line}"
-            )
-
-        return Program(stmts)
+        return Program(stmts, filename=self.filename)
 
     # -------------------------------------------------
     # STATEMENTS
@@ -64,9 +58,11 @@ class Parser:
             self.eat("FROM")
             module = self.eat("NAME").value
             self.eat("IMPORT")
+
             if self.current().type == "MUL":
                 self.eat("MUL")
                 return ImportFrom(module, [], True)
+
             names = []
             while True:
                 names.append(self.eat("NAME").value)
@@ -90,55 +86,39 @@ class Parser:
             if self.current().type == "ASSIGN":
                 self.eat("ASSIGN")
                 expr = self.expr()
+
+            if expr is None:
+                if kind != "VAR":
+                    raise FiberSyntaxError(f"{kind.lower()} requires an initializer at line {t.line}")
+                return VarDecl(name)
+
             return VarAssign(
-                name, expr,
+                name,
+                expr,
                 const=(kind == "CONST"),
                 final=(kind == "FINAL"),
-                static=(kind == "STATIC")
-            ) if expr else VarDecl(name)
+                static=(kind == "STATIC"),
+                declare=True,
+            )
 
         # ---------------- FUNCTION ----------------
         if t.type == "DEF":
-            self.eat("DEF")
-            name = self.eat("NAME").value
-            self.eat("LPAREN")
-            params = []
-            if self.current().type != "RPAREN":
-                while True:
-                    params.append(self.eat("NAME").value)
-                    if self.current().type == "COMMA":
-                        self.eat("COMMA")
-                        continue
-                    break
-            self.eat("RPAREN")
-            return FuncDef(name, params, self.block())
+            return self.function_def()
 
         # ---------------- CLASS ----------------
         if t.type == "CLASS":
-            self.eat("CLASS")
-            name = self.eat("NAME").value
-            parent = None
-            if self.current().type == "EXTENDS":
-                self.eat("EXTENDS")
-                parent = self.eat("NAME").value
-            return ClassDef(name, self.block(), parent)
+            return self.class_def()
+
+        # ---------------- STRUCT / ENUM ----------------
+        if t.type == "STRUCT":
+            return self.struct_def()
+
+        if t.type == "ENUM":
+            return self.enum_def()
 
         # ---------------- IF ----------------
         if t.type == "IF":
-            self.eat("IF")
-            cond = self.expr()
-            then = self.block()
-            else_branch = None
-
-            while self.current().type == "ELIF":
-                self.eat("ELIF")
-                else_branch = If(self.expr(), self.block())
-
-            if self.current().type == "ELSE":
-                self.eat("ELSE")
-                else_branch = self.block()
-
-            return If(cond, then, else_branch)
+            return self.if_stmt()
 
         # ---------------- WHILE ----------------
         if t.type == "WHILE":
@@ -162,19 +142,36 @@ class Parser:
                     step = self.expr()
                 return For(var, start, end, step, self.block())
 
-            # iterable for (LOCKED)
+            # iterable for
             if self.current().type == "IN":
                 self.eat("IN")
-                iterable = self.primary()   # 🔒 grammar enforced
+                iterable = self.primary()
                 step = Number(1)
                 if self.current().type == "STEP":
                     self.eat("STEP")
                     step = self.expr()
                 return ForIn(var, iterable, self.block(), step)
 
-            raise FiberSyntaxError("Invalid for-loop syntax")
+            raise FiberSyntaxError(f"Invalid for-loop syntax at line {t.line}")
 
-        # ---------------- BREAK / CONTINUE / RETURN ----------------
+        # ---------------- TRY / THROW / ASSERT ----------------
+        if t.type == "TRY":
+            return self.try_stmt()
+
+        if t.type == "THROW":
+            self.eat("THROW")
+            return Throw(self.expr())
+
+        if t.type == "ASSERT":
+            self.eat("ASSERT")
+            cond = self.expr()
+            message = None
+            if self.current().type == "COMMA":
+                self.eat("COMMA")
+                message = self.expr()
+            return Assert(cond, message)
+
+        # ---------------- BREAK / CONTINUE / PASS / RETURN ----------------
         if t.type == "BREAK":
             self.eat("BREAK")
             return Break()
@@ -183,11 +180,17 @@ class Parser:
             self.eat("CONTINUE")
             return Continue()
 
+        if t.type == "PASS":
+            self.eat("PASS")
+            return Pass()
+
         if t.type == "RETURN":
             self.eat("RETURN")
-            return Return(self.expr() if self.current().type not in ("NEWLINE", "RBRACE") else None)
+            if self.current().type in ("NEWLINE", "RBRACE", "EOF"):
+                return Return(None)
+            return Return(self.expr())
 
-        # ---------------- ASSIGNMENT ----------------
+        # ---------------- ASSIGNMENT / EXPR STMT ----------------
         expr = self.expr()
         if isinstance(expr, (VarRef, MemberAccess, Index)) and self.current().type == "ASSIGN":
             self.eat("ASSIGN")
@@ -196,14 +199,141 @@ class Parser:
                 return VarAssign(expr.name, val)
             if isinstance(expr, MemberAccess):
                 return MemberAssign(expr.obj, expr.name, val)
-            if isinstance(expr, Index):
-                return IndexAssign(expr.obj, expr.index, val)
-            raise FiberSyntaxError("Invalid assignment target")
+            return IndexAssign(expr.obj, expr.index, val)
 
         if isinstance(expr, (Call, VarRef, MemberAccess, Index)):
             return expr
 
-        raise FiberSyntaxError(f"Unexpected token {t.type}")
+        raise FiberSyntaxError(f"Unexpected token {t.type} at line {t.line}")
+
+    # -------------------------------------------------
+    # COMPOSITE STATEMENT HELPERS
+    # -------------------------------------------------
+    def parse_params(self):
+        self.eat("LPAREN")
+        params = []
+        if self.current().type != "RPAREN":
+            while True:
+                params.append(self.eat("NAME").value)
+                if self.current().type == "COMMA":
+                    self.eat("COMMA")
+                    continue
+                break
+        self.eat("RPAREN")
+        return params
+
+    def function_def(self):
+        self.eat("DEF")
+        name = self.eat("NAME").value
+        params = self.parse_params()
+        return FuncDef(name, params, self.block())
+
+    def method_def(self):
+        self.eat("DEF")
+        name = self.eat("NAME").value
+        params = self.parse_params()
+        return Method(name, params, self.block())
+
+    def class_def(self):
+        self.eat("CLASS")
+        name = self.eat("NAME").value
+        parent = None
+        if self.current().type == "EXTENDS":
+            self.eat("EXTENDS")
+            parent = self.eat("NAME").value
+        body = self.class_block()
+        return ClassDef(name, body, parent)
+
+    def class_block(self):
+        self.eat("LBRACE")
+        methods = []
+        self.skip_newlines()
+        while self.current().type != "RBRACE":
+            if self.current().type == "DEF":
+                methods.append(self.method_def())
+            elif self.current().type == "PASS":
+                self.eat("PASS")
+                methods.append(Pass())
+            else:
+                tok = self.current()
+                raise FiberSyntaxError(
+                    f"Only method definitions are allowed in class body, got {tok.type} at line {tok.line}"
+                )
+            self.skip_newlines()
+        self.eat("RBRACE")
+        return methods
+
+    def name_list_block(self):
+        self.eat("LBRACE")
+        names = []
+        self.skip_newlines()
+        while self.current().type != "RBRACE":
+            names.append(self.eat("NAME").value)
+            if self.current().type == "COMMA":
+                self.eat("COMMA")
+            self.skip_newlines()
+        self.eat("RBRACE")
+        return names
+
+    def struct_def(self):
+        self.eat("STRUCT")
+        name = self.eat("NAME").value
+        return StructDef(name, self.name_list_block())
+
+    def enum_def(self):
+        self.eat("ENUM")
+        name = self.eat("NAME").value
+        return EnumDef(name, self.name_list_block())
+
+    def if_stmt(self):
+        self.eat("IF")
+        cond = self.expr()
+        then_branch = self.block()
+
+        elif_parts = []
+        while self.current().type == "ELIF":
+            self.eat("ELIF")
+            elif_cond = self.expr()
+            elif_block = self.block()
+            elif_parts.append((elif_cond, elif_block))
+
+        else_branch = None
+        if self.current().type == "ELSE":
+            self.eat("ELSE")
+            else_branch = self.block()
+
+        for elif_cond, elif_block in reversed(elif_parts):
+            else_branch = If(elif_cond, elif_block, else_branch)
+
+        return If(cond, then_branch, else_branch)
+
+    def try_stmt(self):
+        self.eat("TRY")
+        try_block = self.block()
+
+        catch_var = None
+        catch_block = None
+        finally_block = None
+
+        if self.current().type == "CATCH":
+            self.eat("CATCH")
+            if self.current().type == "LPAREN":
+                self.eat("LPAREN")
+                catch_var = self.eat("NAME").value
+                self.eat("RPAREN")
+            elif self.current().type == "NAME":
+                catch_var = self.eat("NAME").value
+            catch_block = self.block()
+
+        if self.current().type == "FINALLY":
+            self.eat("FINALLY")
+            finally_block = self.block()
+
+        if catch_block is None and finally_block is None:
+            tok = self.current()
+            raise FiberSyntaxError(f"try must be followed by catch and/or finally near line {tok.line}")
+
+        return TryCatchFinally(try_block, catch_var, catch_block, finally_block)
 
     # -------------------------------------------------
     # BLOCK
@@ -211,8 +341,10 @@ class Parser:
     def block(self):
         self.eat("LBRACE")
         stmts = []
+        self.skip_newlines()
         while self.current().type != "RBRACE":
             stmts.append(self.statement())
+            self.skip_newlines()
         self.eat("RBRACE")
         return stmts
 
@@ -270,18 +402,19 @@ class Parser:
         return self.primary()
 
     # -------------------------------------------------
-    # PRIMARY (KEYWORD-FREE ZONE)
+    # PRIMARY
     # -------------------------------------------------
     def primary(self):
         t = self.current()
 
-        if t.type in {
-            "FOR", "IF", "WHILE", "STEP", "TO",
-            "BREAK", "CONTINUE", "RETURN", "ELIF", "ELSE"
-        }:
-            raise FiberSyntaxError(
-                f"Keyword '{t.value}' not allowed in expression at line {t.line}"
-            )
+        disallowed_keywords = {
+            "FOR", "IF", "WHILE", "STEP", "TO", "BREAK", "CONTINUE",
+            "RETURN", "ELIF", "ELSE", "TRY", "CATCH", "FINALLY",
+            "THROW", "ASSERT", "STRUCT", "ENUM", "CLASS", "DEF",
+            "VAR", "CONST", "FINAL", "STATIC", "IMPORT", "FROM", "AS",
+        }
+        if t.type in disallowed_keywords:
+            raise FiberSyntaxError(f"Keyword '{t.value}' not allowed in expression at line {t.line}")
 
         if t.type == "NUMBER":
             return Number(self.eat("NUMBER").value)
@@ -297,8 +430,9 @@ class Parser:
             self.eat("FALSE")
             return Boolean(False)
 
-        if t.type == "NAME":
-            node = VarRef(self.eat("NAME").value)
+        if t.type in ("NAME", "THIS"):
+            name = self.eat(t.type).value
+            node = VarRef(name)
             while True:
                 if self.current().type == "LPAREN":
                     self.eat("LPAREN")
