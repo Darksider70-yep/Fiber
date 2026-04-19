@@ -11,7 +11,6 @@
         "Programming Languages",
         "Snippets"
     ],
-    "main": "./extension.js",
     "contributes": {
         "languages": [{
             "id": "fiber",
