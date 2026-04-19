@@ -37,17 +37,16 @@ class AIBridge:
                 return data
             
             # Otherwise create new from raw data
-            dtype = torch.float32 if requires_grad else None
-            return torch.tensor(data, requires_grad=requires_grad, dtype=dtype)
+            return torch.tensor(data, requires_grad=requires_grad, dtype=torch.float32)
         except Exception as e:
             raise FiberRuntimeError(f"Tensor creation error: {e}")
 
     @staticmethod
     def matmul(a, b):
         try:
-            ta = a if isinstance(a, torch.Tensor) else torch.tensor(a)
-            tb = b if isinstance(b, torch.Tensor) else torch.tensor(b)
-            return torch.matmul(ta, tb)
+            ta = a if isinstance(a, torch.Tensor) else torch.tensor(a, dtype=torch.float32)
+            tb = b if isinstance(b, torch.Tensor) else torch.tensor(b, dtype=torch.float32)
+            return torch.matmul(ta.to(torch.float32), tb.to(torch.float32))
         except Exception as e:
             raise FiberRuntimeError(f"Matrix multiplication error: {e}")
 
@@ -72,18 +71,19 @@ class AIBridge:
 
     @staticmethod
     def relu(t):
-        return torch.relu(t if isinstance(t, torch.Tensor) else torch.tensor(t))
+        tt = t if isinstance(t, torch.Tensor) else torch.tensor(t, dtype=torch.float32)
+        return torch.relu(tt.to(torch.float32))
 
     @staticmethod
     def sigmoid(t):
-        return torch.sigmoid(t if isinstance(t, torch.Tensor) else torch.tensor(t))
+        tt = t if isinstance(t, torch.Tensor) else torch.tensor(t, dtype=torch.float32)
+        return torch.sigmoid(tt.to(torch.float32))
 
     @staticmethod
     def mse_loss(pred, target):
-        return torch.nn.functional.mse_loss(
-            pred if isinstance(pred, torch.Tensor) else torch.tensor(pred),
-            target if isinstance(target, torch.Tensor) else torch.tensor(target)
-        )
+        tp = pred if isinstance(pred, torch.Tensor) else torch.tensor(pred, dtype=torch.float32)
+        tt = target if isinstance(target, torch.Tensor) else torch.tensor(target, dtype=torch.float32)
+        return torch.nn.functional.mse_loss(tp.to(torch.float32), tt.to(torch.float32))
 
     @staticmethod
     def randn(dims):
