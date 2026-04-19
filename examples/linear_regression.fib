@@ -1,0 +1,49 @@
+# 📈 Linear Regression Training in Fiber
+
+print "--- Initializing Neural Engine ---"
+
+# Target: y = 2 * x + 5
+# We want to learn 'w' and 'b'
+
+var x = tensor([1.0, 2.0, 3.0, 4.0])
+var y_target = tensor([7.0, 9.0, 11.0, 13.0])
+
+# Initialize trainable parameters
+var w = tensor([0.0], true)
+var b = tensor([0.0], true)
+
+var lr = 0.01
+
+print "Starting Training Loop..."
+print "Initial w: " + str(w) + ", b: " + str(b)
+
+for i = 1 to 50 {
+    # 1. Forward Pass: y = w * x + b
+    var y_pred = w * x + b
+    
+    # 2. Compute Loss (MSE)
+    var loss = mse_loss(y_pred, y_target)
+    
+    # 3. Backward Pass
+    zero_grad(w)
+    zero_grad(b)
+    backward(loss)
+    
+    # 4. Update Weights (Manual Step)
+    optimize_step(w, lr)
+    optimize_step(b, lr)
+    
+    if i % 10 == 0 {
+        print "Epoch " + str(i) + " | Loss: " + str(loss) + " | w: " + str(w) + " | b: " + str(b)
+    }
+}
+
+print ""
+print "Training Complete!"
+print "Final weight w: " + str(w) + " (Target: 2.0)"
+print "Final bias b: " + str(b) + " (Target: 5.0)"
+
+# Test with new data
+var test_x = tensor([10.0])
+var prediction = w * test_x + b
+print "Prediction for x=10: " + str(prediction) + " (Expected: 25.0)"

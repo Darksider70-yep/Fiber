@@ -24,17 +24,22 @@ class AIBridge:
         return sp.simplify(expr)
 
     @staticmethod
-    def to_tensor(data):
+    def to_tensor(data, requires_grad=False):
         try:
-            # Handles lists, nested lists, and numpy arrays
-            return np.array(data)
+            # If data is already a tensor, just return it
+            if isinstance(data, torch.Tensor):
+                return data
+            dtype = torch.float32 if requires_grad else None
+            return torch.tensor(data, requires_grad=requires_grad, dtype=dtype)
         except Exception as e:
             raise FiberRuntimeError(f"Tensor creation error: {e}")
 
     @staticmethod
     def matmul(a, b):
         try:
-            return np.matmul(a, b)
+            ta = a if isinstance(a, torch.Tensor) else torch.tensor(a)
+            tb = b if isinstance(b, torch.Tensor) else torch.tensor(b)
+            return torch.matmul(ta, tb)
         except Exception as e:
             raise FiberRuntimeError(f"Matrix multiplication error: {e}")
 
@@ -49,7 +54,6 @@ class AIBridge:
     @staticmethod
     def subst(expr, mapping):
         try:
-            # mapping should be a dict of {var_name: value}
             actual_map = {}
             for k, v in mapping.items():
                 sym = sp.Symbol(k) if isinstance(k, str) else k
@@ -59,6 +63,16 @@ class AIBridge:
             raise FiberRuntimeError(f"Substitution error: {e}")
 
     @staticmethod
-    def torch_logic():
-        # placeholder for future torch integration
-        pass
+    def relu(t):
+        return torch.relu(t if isinstance(t, torch.Tensor) else torch.tensor(t))
+
+    @staticmethod
+    def sigmoid(t):
+        return torch.sigmoid(t if isinstance(t, torch.Tensor) else torch.tensor(t))
+
+    @staticmethod
+    def mse_loss(pred, target):
+        return torch.nn.functional.mse_loss(
+            pred if isinstance(pred, torch.Tensor) else torch.tensor(pred),
+            target if isinstance(target, torch.Tensor) else torch.tensor(target)
+        )

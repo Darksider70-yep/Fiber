@@ -1,5 +1,6 @@
 from .environment import Environment
 from .ast_nodes import FuncDef
+import torch
 import numpy as np
 import sympy as sp
 
@@ -11,12 +12,10 @@ class FiberFunction:
         self.closure = closure
     def call(self, interpreter, args, this=None):
         env = Environment(parent=self.closure)
-        # bind params
         for i, p in enumerate(self.params):
             env.set_local(p, args[i] if i < len(args) else None)
         if this is not None:
             env.set_local('this', this)
-        # execute body
         try:
             return interpreter.exec_block(self.body, env)
         except ReturnSignal as r:
@@ -29,7 +28,7 @@ class ReturnSignal(Exception):
 class FiberClass:
     def __init__(self, name, methods, parent=None):
         self.name = name
-        self.methods = methods  # dict name -> FiberFunction
+        self.methods = methods
         self.parent = parent
     def find_method(self, name):
         if name in self.methods:
@@ -43,16 +42,12 @@ class FiberInstance:
         self.klass = klass
         self.fields = {}
     def get(self, name):
-        # field first
         if name in self.fields:
             return self.fields[name]
-        # then method bound
         m = self.klass.find_method(name)
         if m:
-            # return a bound function wrapper
             def bound(*args):
                 return m.call(self._interpreter, list(args), this=self)
-            # attach meta for interpreter path
             bound._fiber_func = m
             return bound
         raise KeyError(name)
@@ -70,15 +65,40 @@ class FiberSymbolic:
         return str(self.expr)
 
 class FiberTensor:
-    def __init__(self, data):
-        self.data = np.array(data)
+    def __init__(self, data, requires_grad=False):
+        if isinstance(data, torch.Tensor):
+            self.data = data
+        else:
+            # Convert to float for gradients if needed
+            dtype = torch.float32 if requires_grad else None
+            self.data = torch.tensor(data, requires_grad=requires_grad, dtype=dtype)
+    
+    def backward(self):
+        if self.data.requires_grad:
+            self.data.backward()
+    
+    @property
+    def grad(self):
+        if self.data.grad is not None:
+            return FiberTensor(self.data.grad)
+        return None
+
+    def zero_grad(self):
+        if self.data.grad is not None:
+            self.data.grad.zero_()
+
     def __repr__(self):
-        return f'Tensor({self.data})'
+        return f'Tensor({self.data.detach().cpu().numpy() if self.data.requires_grad else self.data.cpu().numpy()}, grad={self.data.requires_grad})'
+    
     def __str__(self):
-        return str(self.data)
+        return str(self.data.detach().cpu().numpy() if self.data.requires_grad else self.data.cpu().numpy())
+
     def __getitem__(self, idx):
-        return self.data[idx]
+        return FiberTensor(self.data[idx])
+    
     def __setitem__(self, idx, val):
-        self.data[idx] = val
+        v = val.data if isinstance(val, FiberTensor) else val
+        self.data[idx] = v
+        
     def __len__(self):
-        return len(self.data)
+        return len(self.data)
