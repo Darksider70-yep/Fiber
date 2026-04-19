@@ -1,0 +1,13 @@
+# 📦 Fiber JSON Library
+
+def parse(s) {
+    try {
+        return json_parse(s)
+    } catch e {
+        return None
+    }
+}
+
+def stringify(obj) {
+    return json_str(obj)
+}

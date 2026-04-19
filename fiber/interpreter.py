@@ -74,6 +74,38 @@ class Interpreter:
         # High-Level Optimizer
         self.global_env.set_local('optimizer', lambda params, opt_type="sgd", lr=0.01: FiberOptimizer(params, opt_type, lr))
 
+        # -----------------------------
+        # File System & OS Builtins
+        # -----------------------------
+        import json
+        import subprocess
+        import time
+
+        def fs_read(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+        
+        def fs_write(path, content):
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(str(content))
+        
+        def fs_append(path, content):
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(str(content))
+        
+        self.global_env.set_local("fs_read", fs_read)
+        self.global_env.set_local("fs_write", fs_write)
+        self.global_env.set_local("fs_append", fs_append)
+        self.global_env.set_local("fs_exists", lambda p: os.path.exists(p))
+        self.global_env.set_local("os_env", lambda k: os.getenv(k))
+        self.global_env.set_local("os_exec", lambda c: subprocess.check_output(c, shell=True).decode())
+        self.global_env.set_local("os_sleep", lambda ms: time.sleep(ms / 1000.0))
+        self.global_env.set_local("time_now", lambda: time.time())
+        
+        # JSON Support
+        self.global_env.set_local("json_parse", lambda s: json.loads(s))
+        self.global_env.set_local("json_str", lambda o: json.dumps(o, indent=4))
+
     def _validate_module_name(self, module_name):
         if not MODULE_NAME_RE.match(module_name):
             raise FiberRuntimeError(f"Invalid module name '{module_name}'")
@@ -83,6 +115,12 @@ class Interpreter:
         filename = f"{module_name}.fib"
         current_exec_dir = self.exec_dir_stack[-1] if self.exec_dir_stack else os.getcwd()
         search_paths = []
+        
+        # 📦 Handling Standalone Bundle (PyInstaller)
+        if getattr(sys, 'frozen', False):
+            search_paths.append(os.path.join(sys._MEIPASS, "lib"))
+            search_paths.append(sys._MEIPASS)
+
         for candidate in (
             current_exec_dir,
             os.path.join(current_exec_dir, "lib"),
@@ -626,6 +664,8 @@ class Interpreter:
 
                 if isinstance(target, dict):
                     member = target.get(name)
+                    if isinstance(member, FiberFunction):
+                        return member.call(self, args)
                     if callable(member):
                         return member(*args)
                     raise FiberNameError(f"Member {name} not callable on dict")

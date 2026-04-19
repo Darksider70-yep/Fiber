@@ -1,0 +1,20 @@
+# 💾 Fiber I/O Library
+
+def read(path) {
+    if not fs_exists(path) {
+        return None
+    }
+    return fs_read(path)
+}
+
+def write(path, content) {
+    fs_write(path, content)
+}
+
+def append_to(path, content) {
+    fs_append(path, content)
+}
+
+def exists(path) {
+    return fs_exists(path)
+}

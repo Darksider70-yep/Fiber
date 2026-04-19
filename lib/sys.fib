@@ -1,0 +1,21 @@
+# ⚙️ Fiber System Library
+
+def env(name) {
+    return os_env(name)
+}
+
+def command(cmd) {
+    try {
+        return os_exec(cmd)
+    } catch e {
+        return "Error: " + e
+    }
+}
+
+def sleep(ms) {
+    os_sleep(ms)
+}
+
+def now() {
+    return time_now()
+}
