@@ -3,7 +3,6 @@
     "displayName": "Fiber",
     "description": "High-performance Neuro-Symbolic Language support for VS Code.",
     "version": "1.0.0",
-    "publisher": "Fiber",
     "engines": {
         "vscode": "^1.75.0"
     },
