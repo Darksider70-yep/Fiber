@@ -13,38 +13,27 @@ Fiber utilizes a multi-tiered declaration system to handle memory and mutability
 | `final` | Once-set | Lexical | Scope-bound |
 | `static` | Mutable | Global | Persistent |
 
-### The Scoping Visual
-```mermaid
-graph TD
-    subgraph Global
-        A[static global_var]
-    end
-    subgraph Function_Scope
-        B[var local_x]
-        A --> B
-        subgraph Nested_Block
-            C[var nested_y]
-            B --> C
-        end
-    end
+### The `None` Value
+Fiber uses `None` as its first-class null value.
+```fiber
+var result = None
+if result == None {
+    print "Pending..."
+}
 ```
-
-> [!TIP]
-> **Lexical Scoping**: Variables are "locked" to the where they are defined. A nested function remembers its parent's variables even after the parent has finished executing (Closures).
 
 ---
 
-## 2. Control Logic
+## 2. Control Logic & Operators
 
-### Conditional Branching
+### Short-Circuit Evaluation
+The logical operators `and` and `or` utilize short-circuit logic, improving performance and safety.
 ```fiber
-if score > 90 {
-    level = "A"
-} elif score > 80 {
-    level = "B"
-} else {
-    level = "C"
-}
+# func_b() is NEVER called if a is false
+if a and func_b() { ... }
+
+# func_c() is NEVER called if a is true
+if a or func_c() { ... }
 ```
 
 ### Advanced Iteration
@@ -67,28 +56,18 @@ Fiber loops are strictly typed for performance:
 
 ---
 
-## 3. First-Class Functions
+## 3. Native Collections
 
-In Fiber, functions are values. They can be stored in variables, passed to other functions, and returned as results.
-
-```fiber
-# High-order function
-def apply(val, func) {
-    return func(val)
-}
-
-def square(n) { return n * n }
-
-print apply(5, square) # 25
-```
-
-## 4. Native Collections
+Fiber supports multi-line literals for ease of defining large datasets or configurations.
 
 ### List Literals
 Ordered, dynamic arrays.
 ```fiber
-var colors = ["red", "green", "blue"]
-append(colors, "alpha")
+var colors = [
+    "red", 
+    "green", 
+    "blue"
+]
 ```
 
 ### Dictionary Literals (v0.2)
@@ -99,4 +78,28 @@ var config = {
     "port": 8080,
     "active": true
 }
+```
+
+---
+
+## 4. First-Class Functions & Scoping
+
+In Fiber, functions are values. They can be stored in variables, passed to other functions, and returned as results.
+
+### Lexical Closures
+Fiber supports lexical closures, allowing functions to "remember" variables from their parent scope.
+
+```fiber
+def make_counter(start) {
+    var count = start
+    def increment() {
+        count = count + 1
+        return count
+    }
+    return increment
+}
+
+var c = make_counter(10)
+print c() # 11
+print c() # 12
 ```
