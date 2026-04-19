@@ -1,0 +1,52 @@
+{
+    "Fiber Class": {
+        "prefix": "fclass",
+        "body": [
+            "class ${1:MyClass} {",
+            "    def init(${2:args}) {",
+            "        ${0:# TODO}",
+            "    }",
+            "}"
+        ],
+        "description": "Create a Fiber class with constructor"
+    },
+    "Fiber Function": {
+        "prefix": "fdef",
+        "body": [
+            "def ${1:my_func}(${2:args}) {",
+            "    ${0:# TODO}",
+            "}"
+        ],
+        "description": "Create a Fiber function"
+    },
+    "Symbolic Expression": {
+        "prefix": "fexpr",
+        "body": [
+            "var ${1:e} = expr(\"${2:x**2 + 5}\")",
+            "var ${3:deriv} = diff(${1:e}, \"${4:x}\")"
+        ],
+        "description": "Create and differentiate a symbolic expression"
+    },
+    "Neural Sequential": {
+        "prefix": "fneural",
+        "body": [
+            "from neural import Sequential, Linear, ReLU",
+            "",
+            "var model = Sequential([",
+            "    Linear(${1:784}, ${2:256}),",
+            "    ReLU(),",
+            "    Linear(${2:256}, ${3:10})",
+            "])$0"
+        ],
+        "description": "Create a modular neural network"
+    },
+    "DataFrame": {
+        "prefix": "fdf",
+        "body": [
+            "import data",
+            "var df = data.dataframe(${1:rows})",
+            "print df.count()$0"
+        ],
+        "description": "Initialize a Fiber DataFrame"
+    }
+}

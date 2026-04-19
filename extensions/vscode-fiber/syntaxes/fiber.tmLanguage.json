@@ -1,0 +1,64 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Fiber",
+    "scopeName": "source.fiber",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#keywords" },
+        { "include": "#numbers" },
+        { "include": "#function-definitions" },
+        { "include": "#constants" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [{
+                "name": "comment.line.number-sign.fiber",
+                "match": "#.*$"
+            }]
+        },
+        "strings": {
+            "patterns": [{
+                "name": "string.quoted.double.fiber",
+                "begin": "\"",
+                "end": "\"",
+                "patterns": [
+                    { "name": "constant.character.escape.fiber", "match": "\\\\." }
+                ]
+            }]
+        },
+        "keywords": {
+            "patterns": [{
+                "name": "keyword.control.fiber",
+                "match": "\\b(if|else|elif|while|for|in|to|step|retry|return|break|continue|pass|try|catch|finally|throw|assert|import|from|as|this)\\b"
+            }, {
+                "name": "storage.type.fiber",
+                "match": "\\b(var|const|static|final|def|class|struct|enum|extends)\\b"
+            }, {
+                "name": "support.function.fiber",
+                "match": "\\b(print|append|len|range|expr|tensor|diff|subst|randn|matmul|relu|sigmoid|backward)\\b"
+            }]
+        },
+        "numbers": {
+            "patterns": [{
+                "name": "constant.numeric.fiber",
+                "match": "\\b\\d+(\\.\\d+)?\\b"
+            }]
+        },
+        "function-definitions": {
+            "patterns": [{
+                "match": "\\b(def|class)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+                "captures": {
+                    "1": { "name": "storage.type.fiber" },
+                    "2": { "name": "entity.name.function.fiber" }
+                }
+            }]
+        },
+        "constants": {
+            "patterns": [{
+                "name": "constant.language.fiber",
+                "match": "\\b(true|false|None)\\b"
+            }]
+        }
+    }
+}

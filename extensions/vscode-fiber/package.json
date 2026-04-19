@@ -1,0 +1,37 @@
+{
+    "name": "fiber-vscode",
+    "displayName": "Fiber",
+    "description": "High-performance Neuro-Symbolic Language support for VS Code.",
+    "version": "1.0.0",
+    "publisher": "Fiber",
+    "engines": {
+        "vscode": "^1.75.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Snippets"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "languages": [{
+            "id": "fiber",
+            "aliases": ["Fiber", "fiber"],
+            "extensions": [".fib"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "fiber",
+            "scopeName": "source.fiber",
+            "path": "./syntaxes/fiber.tmLanguage.json"
+        }],
+        "snippets": [{
+            "language": "fiber",
+            "path": "./snippets/snippets.json"
+        }],
+        "themes": [{
+            "label": "Fiber Branded Dark",
+            "uiTheme": "vs-dark",
+            "path": "./themes/fiber-dark.json"
+        }]
+    }
+}
