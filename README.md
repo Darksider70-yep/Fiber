@@ -33,15 +33,18 @@ print "=== Fiber 0.3 ==="
 var x = expr("x**2 + 5*x + 6")
 print "Symbolic Expression: " + str(x)
 print "Derivative: " + str(diff(x, "x"))
+## 🚀 Quick Start
 
-var results = [{"point": 1, "val": 12}, {"point": 2, "val": 20}]
-var df = DataFrame(results)
-print "Average Value: " + str(df.mean("val"))
-```
+### Portable Installation (Recommended)
+You don't need Python to run Fiber! 
+1. Download the latest **`fiber.exe`** from the [GitHub Releases](https://github.com/Darksider70-yep/Fiber/releases).
+2. Add the folder to your Windows **Environment Path**.
+3. Run `fiber your_script.fib` from any terminal.
 
-Run it instantly:
+### Python Installation (Source)
+If you wish to run Fiber from source:
 ```bash
-fiber.exe hello.fib
+python main-DARKZONE.py path/to/script.fib
 ```
 
 ---
