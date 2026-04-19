@@ -1,0 +1,34 @@
+# 🖥️ Fiber UI Utility Library
+
+class ProgressBar {
+    def init(total, prefix, suffix, length) {
+        this.total = total
+        this.prefix = prefix
+        this.suffix = suffix
+        this.length = length
+    }
+
+    def update(iteration) {
+        var percent = iteration * 100.0 / this.total
+        var filled_len = int(this.length * iteration / this.total)
+        
+        var bar = ""
+        for i = 0 to filled_len - 1 {
+            bar = bar + "#"
+        }
+        for i = 0 to (this.length - filled_len - 1) {
+            bar = bar + "-"
+        }
+
+        # \r moves cursor to start of line
+        write_raw("\r" + this.prefix + " |" + bar + "| " + str(math_round(percent, 1)) + "% " + this.suffix)
+        
+        if iteration == this.total {
+            write_raw("\n")
+        }
+    }
+}
+
+def progress_bar(total, prefix, suffix, length) {
+    return ProgressBar(total, prefix, suffix, length)
+}

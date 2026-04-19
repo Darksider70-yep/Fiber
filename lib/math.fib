@@ -1,28 +1,8 @@
-# 🔢 Fiber Mathematics Library
+# 🔢 Fiber Advanced Mathematics Library (v1.0)
 
-const PI = 3.141592653589793
-const E = 2.718281828459045
-
-# --- Basic Ops ---
-
-def abs(n) { if n < 0 { return -n } return n }
-def max(a, b) { if a > b { return a } return b }
-def min(a, b) { if a < b { return a } return b }
-
-# --- Rounding ---
-
-def ceil(n) { return math_ceil(n) }
-def floor(n) { return math_floor(n) }
-def round(n, p) { return math_round(n, p) }
-
-# --- Power & Roots ---
-
-def sqrt(n) { return math_sqrt(n) }
-def exp(n) { return math_exp(n) }
-def log(n, b) { return math_log(n, b) }
-def log10(n) { return math_log10(n) }
-
-# --- Trigonometry ---
+# Constants
+const PI = math_pi
+const E = math_e
 
 def sin(n) { return math_sin(n) }
 def cos(n) { return math_cos(n) }
@@ -32,26 +12,25 @@ def acos(n) { return math_acos(n) }
 def atan(n) { return math_atan(n) }
 def atan2(y, x) { return math_atan2(y, x) }
 
-# --- Special Algos ---
+def sqrt(n) { return math_sqrt(n) }
+def exp(n) { return math_exp(n) }
+def log(n) { return math_log(n) }
+def log(n, b) { return math_log(n, b) }
+def log10(n) { return math_log10(n) }
+
+def ceil(n) { return math_ceil(n) }
+def floor(n) { return math_floor(n) }
+def round(n, p) { return math_round(n, p) }
+
+def is_prime(n) {
+    if n < 2 { return false }
+    for i = 2 to math_sqrt(n) {
+        if n % i == 0 { return false }
+    }
+    return true
+}
 
 def factorial(n) {
     if n <= 1 { return 1 }
     return n * factorial(n - 1)
-}
-
-def gcd(a, b) {
-    while b != 0 {
-        var t = b
-        b = a % b
-        a = t
-    }
-    return a
-}
-
-def is_prime(n) {
-    if n < 2 { return false }
-    for i = 2 to sqrt(n) {
-        if n % i == 0 { return false }
-    }
-    return true
 }

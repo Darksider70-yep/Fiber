@@ -10,6 +10,7 @@ import torch
 from .lexer import tokenize
 from .parser import Parser
 from .dsa import FiberStack, FiberQueue, FiberSet
+import codecs
 
 
 class BreakSignal(Exception): pass
@@ -23,8 +24,12 @@ class Interpreter:
         self.global_env = Environment()
         self.module_cache = {}
         self.exec_dir_stack = [os.getcwd()]
-
-        # Builtins
+        self.version = "1.0.0"
+        
+        # -----------------------------
+        # Core & Versioning
+        # -----------------------------
+        self.global_env.set_local("fiber_version", self.version)
         self.global_env.set_local('print', print)
         self.global_env.set_local('None', None)
         self.global_env.set_local('input', lambda prompt="": input(prompt))
@@ -34,6 +39,7 @@ class Interpreter:
         self.global_env.set_local('len', lambda x: len(x))
         self.global_env.set_local('append', lambda arr, val: (arr.append(val), arr)[1])
         self.global_env.set_local('range', lambda start, end=None, step=None: list(range(int(start), int(end) if end is not None else int(start), int(step) if step is not None else 1)) if end is not None else list(range(int(start))))
+        self.global_env.set_local('write_raw', lambda x: sys.stdout.write(str(x)) or sys.stdout.flush())
 
         # -----------------------------
         # Native Data Structures (DSA)
@@ -211,6 +217,10 @@ class Interpreter:
         self.global_env.set_local("math_exp", lambda n: pymath.exp(n))
         self.global_env.set_local("math_log", lambda n, b=pymath.e: pymath.log(n, b))
         self.global_env.set_local("math_log10", lambda n: pymath.log10(n))
+        
+        # Mathematical Constants
+        self.global_env.set_local("math_pi", pymath.pi)
+        self.global_env.set_local("math_e", pymath.e)
 
         # -----------------------------
         # File System Management
@@ -222,6 +232,8 @@ class Interpreter:
         self.global_env.set_local("fs_size", lambda p: os.path.getsize(p))
         self.global_env.set_local("fs_is_dir", lambda p: os.path.isdir(p))
         self.global_env.set_local("fs_is_file", lambda p: os.path.isfile(p))
+        self.global_env.set_local("os_path_join", lambda *args: os.path.join(*args))
+        self.global_env.set_local("os_path_split", lambda p: os.path.split(p))
 
         # -----------------------------
         # URL & Security
@@ -232,6 +244,26 @@ class Interpreter:
         self.global_env.set_local("url_decode", lambda s: urllib.parse.unquote(s))
         self.global_env.set_local("hash_sha256", lambda s: hashlib.sha256(str(s).encode()).hexdigest())
         self.global_env.set_local("hash_md5", lambda s: hashlib.md5(str(s).encode()).hexdigest())
+        
+        # -----------------------------
+        # Time Management
+        # -----------------------------
+        import datetime
+        def ts_format(ts, fmt="%Y-%m-%d %H:%M:%S"):
+            return datetime.datetime.fromtimestamp(ts).strftime(fmt)
+        def ts_parse(s, fmt="%Y-%m-%d %H:%M:%S"):
+            return datetime.datetime.strptime(s, fmt).timestamp()
+            
+        self.global_env.set_local("time_format", ts_format)
+        self.global_env.set_local("time_parse", ts_parse)
+
+        # -----------------------------
+        # System Hardware
+        # -----------------------------
+        import platform
+        import multiprocessing
+        self.global_env.set_local("os_platform", lambda: platform.system())
+        self.global_env.set_local("os_cpu_count", lambda: multiprocessing.cpu_count())
         self.global_env.set_local("regex_match", lambda p, s: bool(re.match(p, s)))
         self.global_env.set_local("regex_search", lambda p, s: bool(re.search(p, s)))
         self.global_env.set_local("regex_replace", lambda p, r, s: re.sub(p, r, s))
@@ -650,7 +682,7 @@ class Interpreter:
         if isinstance(node, Number):
             return node.value
         if isinstance(node, String):
-            return node.value
+            return codecs.decode(node.value, 'unicode_escape')
         if isinstance(node, Boolean):
             return node.value
 

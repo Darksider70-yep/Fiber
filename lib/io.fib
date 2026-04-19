@@ -1,58 +1,24 @@
-# 📂 Fiber I/O Utility Library
+# 📂 Fiber File System & Path Library (v1.0)
 
-# --- Basic Read/Write ---
+def read(path) { return fs_read(path) }
+def write(path, content) { return fs_write(path, content) }
+def append(path, content) { return fs_append(path, content) }
+def exists(path) { return fs_exists(path) }
 
-def read(path) {
-    if not exists(path) { return None }
-    return fs_read(path)
-}
+def mkdir(path) { return fs_mkdir(path) }
+def list(path) { return fs_listdir(path) }
+def remove(path) { return fs_remove(path) }
+def rename(src, dest) { return fs_rename(src, dest) }
+def size(path) { return fs_size(path) }
 
-def write(path, content) {
-    fs_write(path, content)
-}
+def is_dir(path) { return fs_is_dir(path) }
+def is_file(path) { return fs_is_file(path) }
 
-def append_to(path, content) {
-    fs_append(path, content)
-}
+# Path Manipulation
+def join_path(args) { return os_path_join(args) }
+def split_path(path) { return os_path_split(path) }
 
-# --- FS Management ---
-
-def mkdir(path) {
-    fs_mkdir(path)
-}
-
-def remove(path) {
-    if exists(path) {
-        fs_remove(path)
-    }
-}
-
-def list(path) {
-    if is_dir(path) {
-        return fs_listdir(path)
-    }
-    return []
-}
-
-def rename(old, new) {
-    fs_rename(old, new)
-}
-
-# --- Metadata ---
-
-def exists(path) {
-    return fs_exists(path)
-}
-
-def size(path) {
-    if exists(path) { return fs_size(path) }
-    return 0
-}
-
-def is_dir(path) {
-    return fs_is_dir(path)
-}
-
-def is_file(path) {
-    return fs_is_file(path)
+# Binary I/O (Placeholder for v1.1)
+def copy(src, dest) {
+    write(dest, read(src))
 }

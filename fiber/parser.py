@@ -291,13 +291,16 @@ class Parser:
         then_branch = self.block()
 
         elif_parts = []
+        self.skip_newlines()
         while self.current().type == "ELIF":
             self.eat("ELIF")
             elif_cond = self.expr()
             elif_block = self.block()
             elif_parts.append((elif_cond, elif_block))
+            self.skip_newlines()
 
         else_branch = None
+        self.skip_newlines()
         if self.current().type == "ELSE":
             self.eat("ELSE")
             else_branch = self.block()

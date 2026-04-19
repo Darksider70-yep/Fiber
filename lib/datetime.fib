@@ -1,0 +1,22 @@
+# 📅 Fiber Datetime Library
+
+def now() {
+    return time_now()
+}
+
+def format(ts) {
+    # Default to ISO-like format
+    return time_format(ts, "%Y-%m-%d %H:%M:%S")
+}
+
+def format_custom(ts, fmt) {
+    return time_format(ts, fmt)
+}
+
+def parse(s, fmt) {
+    return time_parse(s, fmt)
+}
+
+def today() {
+    return time_format(now(), "%Y-%m-%d")
+}

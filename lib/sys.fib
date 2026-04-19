@@ -1,21 +1,24 @@
-# ⚙️ Fiber System Library
+# 📂 Fiber System Utility Library
 
-def env(name) {
-    return os_env(name)
+def args() {
+    # sys_args would need a builtin, assuming for now
+    return []
 }
 
-def command(cmd) {
-    try {
-        return os_exec(cmd)
-    } catch e {
-        return "Error: " + e
-    }
+def platform() {
+    return os_platform()
 }
 
-def sleep(ms) {
-    os_sleep(ms)
+def cpu_count() {
+    return os_cpu_count()
 }
 
-def now() {
-    return time_now()
+def exit(code) {
+    # If we had a termination builtin, we'd use it here.
+    # For now, it's a stub or uses os_exec to kill.
+    return code
+}
+
+def version() {
+    return "0.3.0-beta"
 }
