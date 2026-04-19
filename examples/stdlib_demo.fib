@@ -1,0 +1,39 @@
+# 🧪 Fiber Standard Library Demo
+
+from math import PI, factorial, is_prime
+from algo import quick_sort, binary_search
+from graph import bfs, dijkstra
+
+print "--- Math Lab ---"
+print "PI: " + str(PI)
+print "Factorial of 5: " + str(factorial(5))
+print "Is 97 prime? " + str(is_prime(97))
+
+print ""
+print "--- Algorithm Lab ---"
+var unsorted = [64, 34, 25, 12, 22, 11, 90]
+var sorted = quick_sort(unsorted)
+print "Unsorted: " + str(unsorted)
+print "Sorted: " + str(sorted)
+print "Index of 22: " + str(binary_search(sorted, 22))
+
+print ""
+print "--- Graph Lab ---"
+# Adjacency list for BFS (directed)
+var graph = {
+    "A": ["B", "C"],
+    "B": ["D"],
+    "C": ["D"],
+    "D": ["E"],
+    "E": []
+}
+print "BFS from A: " + str(bfs(graph, "A"))
+
+# Weighted Adjacency list for Dijkstra: [node, weight]
+var weighted_graph = {
+    "Start": [["A", 1], ["B", 4]],
+    "A": [["B", 2], ["Goal", 5]],
+    "B": [["Goal", 1]],
+    "Goal": []
+}
+print "Shortest Path (Start -> Goal): " + str(dijkstra(weighted_graph, "Start", "Goal"))

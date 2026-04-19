@@ -1,0 +1,88 @@
+# 🔢 Fiber Math Library
+
+const PI = 3.141592653589793
+const E  = 2.718281828459045
+
+# --- Basic Utils ---
+
+def abs(n) {
+    if n < 0 {
+        return -n
+    }
+    return n
+}
+
+def max(a, b) {
+    if a > b {
+        return a
+    }
+    return b
+}
+
+def min(a, b) {
+    if a < b {
+        return a
+    }
+    return b
+}
+
+# --- Number Theory ---
+
+def factorial(n) {
+    if n <= 1 {
+        return 1
+    }
+    return n * factorial(n - 1)
+}
+
+def fibonacci(n) {
+    if n <= 1 {
+        return n
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+def gcd(a, b) {
+    while b != 0 {
+        var temp = b
+        b = a % b
+        a = temp
+    }
+    return a
+}
+
+def lcm(a, b) {
+    if a == 0 or b == 0 {
+        return 0
+    }
+    return abs(a * b) / gcd(a, b)
+}
+
+def is_prime(n) {
+    if n <= 1 {
+        return false
+    }
+    if n <= 3 {
+        return true
+    }
+    if n % 2 == 0 or n % 3 == 0 {
+        return false
+    }
+    
+    var i = 5
+    while i * i <= n {
+        if n % i == 0 or n % (i + 2) == 0 {
+            return false
+        }
+        i = i + 6
+    }
+    return true
+}
+
+def power(base, exp) {
+    var res = 1
+    for i = 1 to exp {
+        res = res * base
+    }
+    return res
+}

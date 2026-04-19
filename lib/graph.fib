@@ -1,0 +1,241 @@
+# 🕸️ Fiber Graph Library
+
+# --- Priority Queue (Min-Heap) for Search Algos ---
+
+class PriorityQueue {
+    def init() {
+        this.heap = []
+    }
+
+    def push(item, priority) {
+        var entry = [priority, item]
+        append(this.heap, entry)
+        this._sift_up(len(this.heap) - 1)
+    }
+
+    def pop() {
+        if len(this.heap) == 0 {
+            return None
+        }
+        var last = len(this.heap) - 1
+        var top = this.heap[0]
+        this.heap[0] = this.heap[last]
+        
+        var new_heap = []
+        for i = 0 to last - 1 {
+            append(new_heap, this.heap[i])
+        }
+        this.heap = new_heap
+        
+        if len(this.heap) > 0 {
+            this._sift_down(0)
+        }
+        return top[1]
+    }
+
+    def is_empty() {
+        return len(this.heap) == 0
+    }
+
+    def _sift_up(idx) {
+        while idx > 0 {
+            var parent = int((idx - 1) / 2)
+            if this.heap[idx][0] < this.heap[parent][0] {
+                var temp = this.heap[idx]
+                this.heap[idx] = this.heap[parent]
+                this.heap[parent] = temp
+                idx = parent
+            } else {
+                break
+            }
+        }
+    }
+
+    def _sift_down(idx) {
+        while true {
+            var left = 2 * idx + 1
+            var right = 2 * idx + 2
+            var smallest = idx
+            
+            if left < len(this.heap) and this.heap[left][0] < this.heap[smallest][0] {
+                smallest = left
+            }
+            if right < len(this.heap) and this.heap[right][0] < this.heap[smallest][0] {
+                smallest = right
+            }
+            
+            if smallest != idx {
+                var temp = this.heap[idx]
+                this.heap[idx] = this.heap[smallest]
+                this.heap[smallest] = temp
+                idx = smallest
+            } else {
+                break
+            }
+        }
+    }
+}
+
+# --- Traversal Algorithms ---
+
+def bfs(adj, start) {
+    var visited = Set()
+    var q = Queue()
+    var result = []
+    
+    visited.add(start)
+    q.enqueue(start)
+    
+    while q.size() > 0 {
+        var node = q.dequeue()
+        append(result, node)
+        
+        var neighbors = adj[node]
+        if neighbors != None {
+            for n in neighbors {
+                if not visited.contains(n) {
+                    visited.add(n)
+                    q.enqueue(n)
+                }
+            }
+        }
+    }
+    return result
+}
+
+def dfs(adj, start) {
+    var visited = Set()
+    var result = []
+    _dfs_recursive(adj, start, visited, result)
+    return result
+}
+
+def _dfs_recursive(adj, node, visited, result) {
+    visited.add(node)
+    append(result, node)
+    
+    var neighbors = adj[node]
+    if neighbors != None {
+        for n in neighbors {
+            if not visited.contains(n) {
+                _dfs_recursive(adj, n, visited, result)
+            }
+        }
+    }
+}
+
+# --- Shortest Path Algorithms ---
+
+def dijkstra(adj, start, end) {
+    var pq = PriorityQueue()
+    pq.push(start, 0)
+    
+    var distances = {start: 0}
+    var previous = {start: None}
+    
+    while not pq.is_empty() {
+        var current = pq.pop()
+        
+        if current == end {
+            break
+        }
+        
+        var neighbors = adj[current]
+        if neighbors == None {
+            continue
+        }
+        
+        for n_pair in neighbors {
+            var n = n_pair[0]
+            var weight = n_pair[1]
+            var alt = distances[current] + weight
+            
+            if distances[n] == None or alt < distances[n] {
+                distances[n] = alt
+                previous[n] = current
+                pq.push(n, alt)
+            }
+        }
+    }
+    return _reconstruct_path(previous, end)
+}
+
+def a_star(adj, start, end, heuristic_func) {
+    var pq = PriorityQueue()
+    pq.push(start, 0)
+    
+    var g_score = {start: 0}
+    var previous = {start: None}
+    
+    while not pq.is_empty() {
+        var current = pq.pop()
+        
+        if current == end {
+            break
+        }
+        
+        var neighbors = adj[current]
+        if neighbors == None {
+            continue
+        }
+        
+        for n_pair in neighbors {
+            var n = n_pair[0]
+            var weight = n_pair[1]
+            var tentative_g = g_score[current] + weight
+            
+            if g_score[n] == None or tentative_g < g_score[n] {
+                previous[n] = current
+                g_score[n] = tentative_g
+                var f_score = tentative_g + heuristic_func(n, end)
+                pq.push(n, f_score)
+            }
+        }
+    }
+    return _reconstruct_path(previous, end)
+}
+
+def greedy_bfs(adj, start, end, heuristic_func) {
+    var pq = PriorityQueue()
+    pq.push(start, heuristic_func(start, end))
+    
+    var visited = Set()
+    var previous = {start: None}
+    
+    while not pq.is_empty() {
+        var current = pq.pop()
+        if current == end {
+            break
+        }
+        
+        visited.add(current)
+        
+        var neighbors = adj[current]
+        if neighbors == None {
+            continue
+        }
+        
+        for n_pair in neighbors {
+            var n = n_pair[0]
+            if not visited.contains(n) {
+                previous[n] = current
+                pq.push(n, heuristic_func(n, end))
+            }
+        }
+    }
+    return _reconstruct_path(previous, end)
+}
+
+def _reconstruct_path(previous, current) {
+    var path = []
+    while current != None {
+        var node = current
+        var old_path = path
+        path = [node]
+        for p in old_path {
+            append(path, p)
+        }
+        current = previous[current]
+    }
+    return path
+}

@@ -1,0 +1,132 @@
+# ⚡ Fiber Algorithm Library
+
+# --- Searching ---
+
+def linear_search(arr, target) {
+    for i = 0 to len(arr) - 1 {
+        if arr[i] == target {
+            return i
+        }
+    }
+    return -1
+}
+
+def binary_search(arr, target) {
+    var low = 0
+    var high = len(arr) - 1
+    
+    while low <= high {
+        var mid = int((low + high) / 2)
+        if arr[mid] == target {
+            return mid
+        } elif arr[mid] < target {
+            low = mid + 1
+        } else {
+            high = mid - 1
+        }
+    }
+    return -1
+}
+
+# --- Sorting ---
+
+def bubble_sort(arr) {
+    var n = len(arr)
+    for i = 0 to n - 1 {
+        for j = 0 to n - i - 2 {
+            if arr[j] > arr[j + 1] {
+                var temp = arr[j]
+                arr[j] = arr[j + 1]
+                arr[j + 1] = temp
+            }
+        }
+    }
+    return arr
+}
+
+# QuickSort Implementation
+def quick_sort(arr) {
+    if len(arr) <= 1 {
+        return arr
+    }
+    
+    var pivot = arr[int(len(arr) / 2)]
+    var left = []
+    var middle = []
+    var right = []
+    
+    for x in arr {
+        if x < pivot {
+            append(left, x)
+        } elif x == pivot {
+            append(middle, x)
+        } else {
+            append(right, x)
+        }
+    }
+    
+    var sorted_left = quick_sort(left)
+    var sorted_right = quick_sort(right)
+    
+    var res = []
+    for x in sorted_left {
+        append(res, x)
+    }
+    for x in middle {
+        append(res, x)
+    }
+    for x in sorted_right {
+        append(res, x)
+    }
+    
+    return res
+}
+
+# MergeSort Implementation
+def merge_sort(arr) {
+    if len(arr) <= 1 {
+        return arr
+    }
+    
+    var mid = int(len(arr) / 2)
+    var left = []
+    var right = []
+    
+    for i = 0 to mid - 1 {
+        append(left, arr[i])
+    }
+    for i = mid to len(arr) - 1 {
+        append(right, arr[i])
+    }
+    
+    left = merge_sort(left)
+    right = merge_sort(right)
+    
+    return _merge(left, right)
+}
+
+def _merge(left, right) {
+    var res = []
+    var i = 0
+    var j = 0
+    
+    while i < len(left) and j < len(right) {
+        if left[i] < right[j] {
+            append(res, left[i])
+            i = i + 1
+        } else {
+            append(res, right[j])
+            j = j + 1
+        }
+    }
+    
+    while i < len(left) {
+        append(res, left[i])
+        i = i + 1
+    }
+    while j < len(right) {
+        append(res, right[j])
+        j = j + 1
+    }
+    return res
+}

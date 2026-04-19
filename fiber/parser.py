@@ -466,12 +466,15 @@ class Parser:
 
         if t.type == "LBRACKET":
             self.eat("LBRACKET")
+            self.skip_newlines()
             elems = []
             if self.current().type != "RBRACKET":
                 while True:
                     elems.append(self.expr())
+                    self.skip_newlines()
                     if self.current().type == "COMMA":
                         self.eat("COMMA")
+                        self.skip_newlines()
                         continue
                     break
             self.eat("RBRACKET")
@@ -479,15 +482,20 @@ class Parser:
 
         if t.type == "LBRACE":
             self.eat("LBRACE")
+            self.skip_newlines()
             pairs = []
             if self.current().type != "RBRACE":
                 while True:
                     key = self.expr()
+                    self.skip_newlines()
                     self.eat("COLON")
+                    self.skip_newlines()
                     val = self.expr()
+                    self.skip_newlines()
                     pairs.append((key, val))
                     if self.current().type == "COMMA":
                         self.eat("COMMA")
+                        self.skip_newlines()
                         continue
                     break
             self.eat("RBRACE")

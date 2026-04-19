@@ -26,6 +26,7 @@ class Interpreter:
 
         # Builtins
         self.global_env.set_local('print', print)
+        self.global_env.set_local('None', None)
         self.global_env.set_local('input', lambda prompt="": input(prompt))
         self.global_env.set_local('int', lambda x: int(float(x)) if str(x).replace('.', '', 1).isdigit() else (_ for _ in ()).throw(FiberRuntimeError(f"Cannot convert {x} to int")))
         self.global_env.set_local('float', lambda x: float(x))
@@ -491,6 +492,18 @@ class Interpreter:
                 return not bool(v)
 
         if isinstance(node, BinOp):
+            if node.op == "AND":
+                l = self.eval_expr(node.left, env)
+                if not bool(l):
+                    return False
+                return bool(self.eval_expr(node.right, env))
+            
+            if node.op == "OR":
+                l = self.eval_expr(node.left, env)
+                if bool(l):
+                    return True
+                return bool(self.eval_expr(node.right, env))
+
             l = self.eval_expr(node.left, env)
             r = self.eval_expr(node.right, env)
 
@@ -551,10 +564,6 @@ class Interpreter:
                 return l <= r
             if node.op == "GTE":
                 return l >= r
-            if node.op == "AND":
-                return bool(l) and bool(r)
-            if node.op == "OR":
-                return bool(l) or bool(r)
 
         if isinstance(node, ListLiteral):
             return [self.eval_expr(e, env) for e in node.elements]
@@ -565,6 +574,12 @@ class Interpreter:
         if isinstance(node, Index):
             obj = self.eval_expr(node.obj, env)
             idx = self.eval_expr(node.index, env)
+            if isinstance(obj, dict):
+                try:
+                    return obj[idx]
+                except KeyError:
+                    return None
+            
             if not hasattr(obj, "__getitem__"):
                 raise FiberRuntimeError(f"Object of type {type(obj).__name__} not indexable")
             res = obj[idx]
