@@ -1,15 +1,33 @@
 {
     "name": "fiber-vscode",
-    "displayName": "Fiber",
-    "description": "High-performance Neuro-Symbolic Language support for VS Code.",
+    "displayName": "Fiber: High-Performance Neuro-Symbolic IDE",
+    "description": "Professional support for the Fiber language: High-performance Neural & Symbolic computing.",
     "version": "1.0.0",
+    "publisher": "daksh-gehlot",
     "engines": {
         "vscode": "^1.75.0"
     },
     "categories": [
         "Programming Languages",
-        "Snippets"
+        "Snippets",
+        "Themes"
     ],
+    "keywords": [
+        "fiber",
+        "neural",
+        "symbolic",
+        "ai",
+        "logic"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Darksider70-yep/Fiber"
+    },
+    "bugs": {
+        "url": "https://github.com/Darksider70-yep/Fiber/issues"
+    },
+    "icon": "icon.png",
+    "license": "MIT",
     "contributes": {
         "languages": [{
             "id": "fiber",
