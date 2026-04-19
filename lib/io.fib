@@ -1,9 +1,9 @@
-# 💾 Fiber I/O Library
+# 📂 Fiber I/O Utility Library
+
+# --- Basic Read/Write ---
 
 def read(path) {
-    if not fs_exists(path) {
-        return None
-    }
+    if not exists(path) { return None }
     return fs_read(path)
 }
 
@@ -15,6 +15,44 @@ def append_to(path, content) {
     fs_append(path, content)
 }
 
+# --- FS Management ---
+
+def mkdir(path) {
+    fs_mkdir(path)
+}
+
+def remove(path) {
+    if exists(path) {
+        fs_remove(path)
+    }
+}
+
+def list(path) {
+    if is_dir(path) {
+        return fs_listdir(path)
+    }
+    return []
+}
+
+def rename(old, new) {
+    fs_rename(old, new)
+}
+
+# --- Metadata ---
+
 def exists(path) {
     return fs_exists(path)
+}
+
+def size(path) {
+    if exists(path) { return fs_size(path) }
+    return 0
+}
+
+def is_dir(path) {
+    return fs_is_dir(path)
+}
+
+def is_file(path) {
+    return fs_is_file(path)
 }

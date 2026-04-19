@@ -59,6 +59,9 @@ class Interpreter:
         self.global_env.set_local('relu', lambda t: FiberTensor(AIBridge.relu(t.data if isinstance(t, FiberTensor) else t)))
         self.global_env.set_local('sigmoid', lambda t: FiberTensor(AIBridge.sigmoid(t.data if isinstance(t, FiberTensor) else t)))
         self.global_env.set_local('mse_loss', lambda p, t: FiberTensor(AIBridge.mse_loss(p.data if isinstance(p, FiberTensor) else p, t.data if isinstance(t, FiberTensor) else t)))
+        self.global_env.set_local('randn', lambda d: FiberTensor(AIBridge.randn(d)))
+        self.global_env.set_local('rand', lambda d: FiberTensor(AIBridge.rand(d)))
+        self.global_env.set_local('conv2d', lambda i, w, b=None, s=1, p=0: FiberTensor(AIBridge.conv2d(i.data if isinstance(i, FiberTensor) else i, w.data if isinstance(w, FiberTensor) else w, b.data if isinstance(b, FiberTensor) else b, s, p)))
         self.global_env.set_local('backward', lambda t: t.backward() if isinstance(t, FiberTensor) else None)
         self.global_env.set_local('grad', lambda t: t.grad if isinstance(t, FiberTensor) else None)
         self.global_env.set_local('zero_grad', lambda t: t.zero_grad() if isinstance(t, FiberTensor) else None)
@@ -105,6 +108,144 @@ class Interpreter:
         # JSON Support
         self.global_env.set_local("json_parse", lambda s: json.loads(s))
         self.global_env.set_local("json_str", lambda o: json.dumps(o, indent=4))
+        
+        # -----------------------------
+        # CSV Support
+        # -----------------------------
+        import csv
+        def lib_csv_read(path, as_dict=False):
+            with open(path, "r", encoding="utf-8") as f:
+                if as_dict:
+                    return list(csv.DictReader(f))
+                return list(csv.reader(f))
+        
+        def lib_csv_write(path, rows):
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerows(rows)
+        
+        self.global_env.set_local("csv_read_native", lib_csv_read)
+        self.global_env.set_local("csv_write_native", lib_csv_write)
+
+        # -----------------------------
+        # SQLite Support
+        # -----------------------------
+        import sqlite3
+        def sql_connect(path):
+            conn = sqlite3.connect(path)
+            conn.row_factory = sqlite3.Row # Allows dict-like access
+            return conn
+        
+        def sql_query(conn, query, params=None):
+            cur = conn.cursor()
+            if params:
+                cur.execute(query, params)
+            else:
+                cur.execute(query)
+            # Convert sqlite3.Row to Python dict
+            return [dict(row) for row in cur.fetchall()]
+        
+        def sql_exec(conn, query, params=None):
+            cur = conn.cursor()
+            if params:
+                cur.execute(query, params)
+            else:
+                cur.execute(query)
+            conn.commit()
+            return cur.rowcount
+            
+        self.global_env.set_local("sql_connect", sql_connect)
+        self.global_env.set_local("sql_query", sql_query)
+        self.global_env.set_local("sql_exec", sql_exec)
+        self.global_env.set_local("sql_close", lambda c: c.close())
+
+        # -----------------------------
+        # Networking (Sync Only)
+        # -----------------------------
+        import requests
+        
+        def http_req(method, url, data=None, headers=None):
+            try:
+                res = requests.request(method.upper(), url, json=data, headers=headers, timeout=10)
+                return {
+                    "status": res.status_code,
+                    "text": res.text,
+                    "json": res.json() if "application/json" in res.headers.get("Content-Type", "") else None
+                }
+            except Exception as e:
+                return {"status": -1, "error": str(e)}
+        
+        self.global_env.set_local("http_req", http_req)
+
+        # -----------------------------
+        # String & RegEx
+        # -----------------------------
+        import re
+        self.global_env.set_local("str_split", lambda s, sep: s.split(sep))
+        self.global_env.set_local("str_join", lambda l, sep: sep.join(str(x) for x in l))
+        self.global_env.set_local("str_replace", lambda s, o, n: s.replace(o, n))
+        self.global_env.set_local("str_trim", lambda s: s.strip())
+        self.global_env.set_local("str_contains", lambda s, sub: sub in s)
+        self.global_env.set_local("str_lower", lambda s: s.lower())
+        self.global_env.set_local("str_upper", lambda s: s.upper())
+        
+        # List Statistics
+        self.global_env.set_local("list_sum", lambda l: sum(float(x) for x in l))
+        self.global_env.set_local("list_mean", lambda l: sum(float(x) for x in l) / len(l) if len(l) > 0 else 0)
+
+        # -----------------------------
+        # Math & Trigonometry
+        # -----------------------------
+        import math as pymath
+        self.global_env.set_local("math_sin", lambda n: pymath.sin(n))
+        self.global_env.set_local("math_cos", lambda n: pymath.cos(n))
+        self.global_env.set_local("math_tan", lambda n: pymath.tan(n))
+        self.global_env.set_local("math_asin", lambda n: pymath.asin(n))
+        self.global_env.set_local("math_acos", lambda n: pymath.acos(n))
+        self.global_env.set_local("math_atan", lambda n: pymath.atan(n))
+        self.global_env.set_local("math_atan2", lambda y, x: pymath.atan2(y, x))
+        self.global_env.set_local("math_ceil", lambda n: pymath.ceil(n))
+        self.global_env.set_local("math_floor", lambda n: pymath.floor(n))
+        self.global_env.set_local("math_round", lambda n, p=0: round(n, p))
+        self.global_env.set_local("math_sqrt", lambda n: pymath.sqrt(n))
+        self.global_env.set_local("math_exp", lambda n: pymath.exp(n))
+        self.global_env.set_local("math_log", lambda n, b=pymath.e: pymath.log(n, b))
+        self.global_env.set_local("math_log10", lambda n: pymath.log10(n))
+
+        # -----------------------------
+        # File System Management
+        # -----------------------------
+        self.global_env.set_local("fs_mkdir", lambda p: os.makedirs(p, exist_ok=True))
+        self.global_env.set_local("fs_remove", lambda p: os.remove(p))
+        self.global_env.set_local("fs_listdir", lambda p: os.listdir(p))
+        self.global_env.set_local("fs_rename", lambda s, d: os.rename(s, d))
+        self.global_env.set_local("fs_size", lambda p: os.path.getsize(p))
+        self.global_env.set_local("fs_is_dir", lambda p: os.path.isdir(p))
+        self.global_env.set_local("fs_is_file", lambda p: os.path.isfile(p))
+
+        # -----------------------------
+        # URL & Security
+        # -----------------------------
+        import urllib.parse
+        import hashlib
+        self.global_env.set_local("url_encode", lambda s: urllib.parse.quote(s))
+        self.global_env.set_local("url_decode", lambda s: urllib.parse.unquote(s))
+        self.global_env.set_local("hash_sha256", lambda s: hashlib.sha256(str(s).encode()).hexdigest())
+        self.global_env.set_local("hash_md5", lambda s: hashlib.md5(str(s).encode()).hexdigest())
+        self.global_env.set_local("regex_match", lambda p, s: bool(re.match(p, s)))
+        self.global_env.set_local("regex_search", lambda p, s: bool(re.search(p, s)))
+        self.global_env.set_local("regex_replace", lambda p, r, s: re.sub(p, r, s))
+
+        # -----------------------------
+        # Enhanced Random
+        # -----------------------------
+        import random
+        self.global_env.set_local("rand_int", lambda a, b: random.randint(a, b))
+        def vec_shuffle(l):
+            random.shuffle(l)
+            return l
+        self.global_env.set_local("vec_shuffle", vec_shuffle)
+        self.global_env.set_local("vec_choice", lambda l: random.choice(l))
 
     def _validate_module_name(self, module_name):
         if not MODULE_NAME_RE.match(module_name):
@@ -555,6 +696,7 @@ class Interpreter:
                 elif node.op == "MINUS": res = raw_l - raw_r
                 elif node.op == "MUL": res = raw_l * raw_r
                 elif node.op == "DIV": res = raw_l / raw_r
+                elif node.op == "POWER": res = raw_l ** raw_r
                 
                 if res is not None:
                     if isinstance(res, torch.Tensor):
@@ -588,6 +730,8 @@ class Interpreter:
                 return l * r
             if node.op == "DIV":
                 return l / r
+            if node.op == "POWER":
+                return l ** r
             if node.op == "MOD":
                 return l % r
             if node.op == "EQ":

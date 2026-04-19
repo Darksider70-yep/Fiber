@@ -1,0 +1,29 @@
+# 🌐 Fiber Network Library
+
+def get(url, headers) {
+    return http_req("get", url, None, headers)
+}
+
+def post(url, data, headers) {
+    return http_req("post", url, data, headers)
+}
+
+def fetch_json(url) {
+    var res = get(url, None)
+    return res["json"]
+}
+
+# --- Utilities ---
+
+def encode(s) { return url_encode(s) }
+def decode(s) { return url_decode(s) }
+
+def download(url, dest) {
+    var res = get(url, None)
+    if res["status"] == 200 {
+        # Using built-in fs_write (io.fib might not be loaded)
+        fs_write(dest, res["text"])
+        return true
+    }
+    return false
+}

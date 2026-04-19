@@ -33,6 +33,7 @@ TOKEN_SPEC = [
     # Math
     ("PLUS", r"\+"),
     ("MINUS", r"-"),
+    ("POWER", r"\*\*"),
     ("MUL", r"\*"),
     ("DIV", r"/"),
     ("MOD", r"%"),
@@ -44,9 +45,8 @@ TOKEN_SPEC = [
     ("MISMATCH", r"."),
 ]
 
-# Keywords — include try/catch/finally/throw/assert and struct/enum etc.
 KEYWORDS = {
-    "class", "def", "var", "const", "final", "static",
+    "var", "const", "static", "final", "def", "class",
     "struct", "enum", "print", "return", "extends",
     "if", "elif", "else", "while", "for", "in", "to", "step",
     "and", "or", "not", "true", "false",
@@ -104,13 +104,11 @@ def tokenize(code: str):
                 tokens.append(Token("NAME", val, line))
             continue
         if kind == "STRING":
-            s = val[1:-1]
-            s = s.replace("\\n", "\n").replace('\\"', '"').replace("\\\\", "\\")
-            tokens.append(Token("STRING", s, line))
+            # remove quotes
+            tokens.append(Token("STRING", val[1:-1], line))
             continue
-        if kind == "MISMATCH":
-            raise FiberSyntaxError(f"Unexpected char: {val!r} at line {line}")
+
         tokens.append(Token(kind, val, line))
 
-    tokens.append(Token("EOF", None, line))
+    tokens.append(Token("EOF", "", line))
     return tokens

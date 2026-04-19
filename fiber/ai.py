@@ -26,9 +26,17 @@ class AIBridge:
     @staticmethod
     def to_tensor(data, requires_grad=False):
         try:
-            # If data is already a tensor, just return it
+            # Unwrap if it's already a FiberTensor or similar
+            if hasattr(data, "data") and isinstance(data.data, torch.Tensor):
+                data = data.data
+            
+            # If it's already a torch.Tensor, just return it (maybe clone for grad settings)
             if isinstance(data, torch.Tensor):
+                if requires_grad and not data.requires_grad:
+                    data = data.clone().detach().to(dtype=torch.float32).requires_grad_(True)
                 return data
+            
+            # Otherwise create new from raw data
             dtype = torch.float32 if requires_grad else None
             return torch.tensor(data, requires_grad=requires_grad, dtype=dtype)
         except Exception as e:
@@ -76,3 +84,18 @@ class AIBridge:
             pred if isinstance(pred, torch.Tensor) else torch.tensor(pred),
             target if isinstance(target, torch.Tensor) else torch.tensor(target)
         )
+
+    @staticmethod
+    def randn(dims):
+        return torch.randn(dims)
+
+    @staticmethod
+    def rand(dims):
+        return torch.rand(dims)
+
+    @staticmethod
+    def conv2d(input, weight, bias=None, stride=1, padding=0):
+        # Ensure bias is float if provided
+        if bias is not None and not isinstance(bias, torch.Tensor):
+            bias = torch.tensor(bias, dtype=torch.float32)
+        return torch.nn.functional.conv2d(input, weight, bias, stride, padding)

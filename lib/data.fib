@@ -1,0 +1,127 @@
+# 📊 Fiber Data Analysis Library (DataFrames)
+
+class DataFrame {
+    def init(rows) {
+        this.rows = rows
+    }
+
+    def data() {
+        return this.rows
+    }
+
+    def head(n) {
+        var res = []
+        for i = 0 to n {
+            if i < len(this.rows) {
+                append(res, this.rows[i])
+            }
+        }
+        return DataFrame(res)
+    }
+
+    def column(name) {
+        var res = []
+        for r in this.rows {
+            append(res, r[name])
+        }
+        return res
+    }
+
+    def filter(col, val) {
+        var res = []
+        for r in this.rows {
+            if r[col] == val {
+                append(res, r)
+            }
+        }
+        return DataFrame(res)
+    }
+
+    # --- Statistics ---
+
+    def mean(col) {
+        var vals = this.column(col)
+        return list_mean(vals)
+    }
+
+    def sum(col) {
+        var vals = this.column(col)
+        return list_sum(vals)
+    }
+
+    def count() {
+        return len(this.rows)
+    }
+
+    def describe() {
+        # Return a dictionary of basic stats for performance/programmatic use
+        var stats = {}
+        if len(this.rows) == 0 { return stats }
+        
+        # Identify numeric columns from first row
+        var first = this.rows[0]
+        # We can't easily iterate keys in Fiber 0.2 yet without a builtin
+        # So we expect the user to call it or we do a fixed pass if we had keys()
+        # For now, let's assume we implement a basic summary of what we can
+        return "DataFrame Summary: " + str(len(this.rows)) + " rows"
+    }
+
+    # --- Cleaning ---
+
+    def dropna(col) {
+        var res = []
+        for r in this.rows {
+            if r[col] != None {
+                append(res, r)
+            }
+        }
+        return DataFrame(res)
+    }
+
+    def fillna(col, val) {
+        var res = []
+        for r in this.rows {
+            var new_row = r # Shallow copy of the dict
+            if new_row[col] == None {
+                new_row[col] = val
+            }
+            append(res, new_row)
+        }
+        return DataFrame(res)
+    }
+
+    # --- Ordering ---
+
+    def sort_by(col, ascending) {
+        # Simple Bubble Sort for stability (Fiber 0.2 doesn't have native sort on dataframes)
+        # Using a copy
+        var sorted_rows = []
+        for r in this.rows { append(sorted_rows, r) }
+        
+        var n = len(sorted_rows)
+        for i = 0 to n - 1 {
+            for j = 0 to n - i - 2 {
+                var val_j = sorted_rows[j][col]
+                var val_next = sorted_rows[j+1][col]
+                
+                var swap = false
+                if ascending {
+                    if val_j > val_next { swap = true }
+                } else {
+                    if val_j < val_next { swap = true }
+                }
+                
+                if swap {
+                    var temp = sorted_rows[j]
+                    sorted_rows[j] = sorted_rows[j+1]
+                    sorted_rows[j+1] = temp
+                }
+            }
+        }
+        return DataFrame(sorted_rows)
+    }
+}
+
+def dataframe(rows) {
+    return DataFrame(rows)
+}

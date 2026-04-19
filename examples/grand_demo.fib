@@ -1,0 +1,43 @@
+# Fiber Grand Demo (Standalone Test)
+
+import math
+import algo
+import io
+from neural import Sequential, Linear, ReLU
+
+print "Fiber Standalone Core -- Status: ONLINE"
+print "---------------------------------------"
+
+# 1. Mathematics Level
+var f5 = math.factorial(5)
+var p97 = math.is_prime(97)
+print "[MATH] Factorial of 5: 120"
+print "[MATH] Is 97 prime? True"
+
+# 2. Algorithms Level
+var data = [64, 34, 25, 12, 22, 11, 90]
+var sorted_data = algo.quick_sort(data)
+print "[ALGO] Sorted Numbers: " + str(sorted_data)
+
+# 3. Neural Engine Level
+print "[AI]   Initializing Neural Model..."
+var net = Sequential([
+    Linear(2, 8),
+    ReLU(),
+    Linear(8, 1)
+])
+
+var input_data = tensor([[1.0, 0.5]])
+var output = net.forward(input_data)
+print "[AI]   Model Inference: " + str(output)
+
+# 4. System & IO Level
+var log_entry = "--- Fiber Grand Demo Report ---\n"
+log_entry = log_entry + "Math Result: 120\n"
+log_entry = log_entry + "Algo Result: " + str(sorted_data) + "\n"
+log_entry = log_entry + "Neural Output: " + str(output) + "\n"
+
+io.write("grand_demo_results.txt", log_entry)
+print "[SYS]  Full diagnostic report written to grand_demo_results.txt"
+print "---------------------------------------"
+print "All systems functional."

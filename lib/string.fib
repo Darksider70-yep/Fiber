@@ -1,0 +1,46 @@
+# 📂 Fiber String Library
+
+# --- Basics ---
+
+def split(s, sep) { return str_split(s, sep) }
+def join(l, sep) { return str_join(l, sep) }
+def replace(s, old, new) { return str_replace(s, old, new) }
+def trim(s) { return str_trim(s) }
+def contains(s, sub) { return str_contains(s, sub) }
+def to_lower(s) { return str_lower(s) }
+def to_upper(s) { return str_upper(s) }
+
+# --- Formatting ---
+
+def pad_left(s, n, char) {
+    var res = s
+    while len(res) < n {
+        res = char + res
+    }
+    return res
+}
+
+def pad_right(s, n, char) {
+    var res = s
+    while len(res) < n {
+        res = res + char
+    }
+    return res
+}
+
+# --- Validation ---
+
+def is_digit(s) {
+    # Simple regex-less check or use the new builtins (if added)
+    # Since I didn't add is_digit builtin, I'll do a range check
+    for i = 0 to len(s) - 1 {
+        var c = s[i]
+        if c < "0" or c > "9" { return false }
+    }
+    return true
+}
+
+# --- Hashing & Security ---
+
+def sha256(s) { return hash_sha256(s) }
+def md5(s) { return hash_md5(s) }

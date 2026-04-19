@@ -19,9 +19,9 @@ graph TD
     B --> C[Recursive Descent Parser]
     C --> D[Abstract Syntax Tree]
     D --> E[Execution Engine]
-    E --> F[Symbolic Engine (SymPy)]
-    E --> G[Neural Engine (PyTorch)]
-    E --> H[LibFiber (Standard Library)]
+    E --> F["Symbolic Engine (SymPy)"]
+    E --> G["Neural Engine (PyTorch)"]
+    E --> H["LibFiber (Standard Library)"]
 ```
 
 ## 🧠 Core Philosophy

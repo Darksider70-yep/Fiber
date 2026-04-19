@@ -389,8 +389,15 @@ class Parser:
         return node
 
     def term(self):
-        node = self.factor()
+        node = self.power_expr()
         while self.current().type in ("MUL", "DIV", "MOD"):
+            op = self.eat().type
+            node = BinOp(node, op, self.power_expr())
+        return node
+
+    def power_expr(self):
+        node = self.factor()
+        while self.current().type == "POWER":
             op = self.eat().type
             node = BinOp(node, op, self.factor())
         return node

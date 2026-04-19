@@ -8,12 +8,12 @@ Fiber uses a multi-stage pipeline to transform abstract mathematical intent into
 
 ```mermaid
 graph LR
-    A[String Input] --> B(expr parsing)
+    A[String Input] --> B("expr parsing")
     B --> C{Symbolic Manipulation}
     C -->|diff| D[Derivative]
     C -->|simplify| E[Simplified Expression]
     C -->|solve| F[Roots/Solutions]
-    D --> G(subst mapping)
+    D --> G("subst mapping")
     G --> H[Final Numeric Value]
 ```
 

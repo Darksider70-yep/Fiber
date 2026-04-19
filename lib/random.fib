@@ -1,0 +1,31 @@
+# 🎲 Fiber Random Library
+
+def choice(l) {
+    return vec_choice(l)
+}
+
+def shuffle(l) {
+    return vec_shuffle(l)
+}
+
+def randint(min, max) {
+    return rand_int(min, max)
+}
+
+def sample(l, k) {
+    # Simple sampling without replacement using shuffle
+    var temp = []
+    # Copy list members
+    for x in l {
+        append(temp, x)
+    }
+    shuffle(temp)
+    
+    var result = []
+    for i = 0 to k {
+        if i < len(temp) {
+            append(result, temp[i])
+        }
+    }
+    return result
+}

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Fiber Build Artifacts
+build/
+dist/
+*.spec
+
+# Local Data
+*.db
+*.csv
+grand_report.txt
+grand_demo_results.txt
+
+# IDEs
+.vscode/
+.idea/
+.gemini/
+
+# OS
+.DS_Store
+Thumbs.db

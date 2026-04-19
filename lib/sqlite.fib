@@ -1,0 +1,17 @@
+# 🗄️ Fiber SQLite Library
+
+def connect(path) {
+    return sql_connect(path)
+}
+
+def query(conn, sql, params) {
+    return sql_query(conn, sql, params)
+}
+
+def execute(conn, sql, params) {
+    return sql_exec(conn, sql, params)
+}
+
+def close(conn) {
+    sql_close(conn)
+}

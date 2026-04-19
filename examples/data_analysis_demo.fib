@@ -1,0 +1,47 @@
+# 📊 Fiber Data Analysis Demo
+
+import csv
+import sqlite
+from data import DataFrame
+
+print "=== Fiber Data Pipeline ==="
+
+# 1. Create and Save CSV
+var sales_data = [
+    ["id", "product", "price", "region"],
+    [1, "Neural Chip", 500, "East"],
+    [2, "Symbolic Core", 300, "West"],
+    [3, "Logic Gate", 150, "East"],
+    [4, "Fiber Executable", 1000, "West"]
+]
+
+print "Saving dataset to sales.csv..."
+csv.write("sales.csv", sales_data)
+
+# 2. Persist to SQLite
+print "Moving data to SQLite database..."
+var conn = sqlite.connect("fiber_data.db")
+sqlite.execute(conn, "CREATE TABLE IF NOT EXISTS sales (id INT, product TEXT, price INT, region TEXT)", None)
+sqlite.execute(conn, "DELETE FROM sales", None) # Clear old data
+
+# Insert from CSV (skipping header)
+for i = 1 to len(sales_data) - 1 {
+    var row = sales_data[i]
+    sqlite.execute(conn, "INSERT INTO sales VALUES (?, ?, ?, ?)", row)
+}
+
+# 3. Analyze with DataFrame
+print "Loading data into DataFrame level..."
+var rows = sqlite.query(conn, "SELECT * FROM sales", None)
+var df = DataFrame(rows)
+
+print "Total Sales Records: " + str(df.count())
+print "Average Price: " + str(df.mean("price"))
+
+print "--- High Level Insight ---"
+var west_df = df.filter("region", "West")
+print "West Region Sales: " + str(west_df.count())
+print "West Region Total: " + str(west_df.sum("price"))
+
+sqlite.close(conn)
+print "Pipeline Complete."

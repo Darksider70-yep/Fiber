@@ -1,0 +1,13 @@
+# 📄 Fiber CSV Library
+
+def read(path) {
+    return csv_read_native(path, false)
+}
+
+def read_dict(path) {
+    return csv_read_native(path, true)
+}
+
+def write(path, rows) {
+    csv_write_native(path, rows)
+}

@@ -1,0 +1,13 @@
+# 🔍 Fiber RegEx Library
+
+def match(pattern, s) {
+    return regex_match(pattern, s)
+}
+
+def search(pattern, s) {
+    return regex_search(pattern, s)
+}
+
+def replace(pattern, repl, s) {
+    return regex_replace(pattern, repl, s)
+}

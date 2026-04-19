@@ -1,0 +1,89 @@
+# 🧠 Fiber Neural Layers Library
+
+# --- Base Layer ---
+
+class Layer {
+    def init() {
+        this.params = []
+        this.training = true
+    }
+
+    def forward(x) {
+        return x
+    }
+
+    def parameters() {
+        return this.params
+    }
+    
+    def train() { this.training = true }
+    def eval() { this.training = false }
+}
+
+# --- Core Layers ---
+
+class Linear extends Layer {
+    def init(in_features, out_features) {
+        # Xavier Initialization
+        var limit = 1.0 / (in_features ** 0.5)
+        this.weight = tensor(randn([in_features, out_features]) * limit, true)
+        this.bias = tensor(randn([out_features]) * 0.01, true)
+        this.params = [this.weight, this.bias]
+    }
+
+    def forward(x) {
+        # x @ w.T + b
+        return matmul(x, this.weight) + this.bias
+    }
+}
+
+class Conv2D extends Layer {
+    def init(in_channels, out_channels, kernel_size, stride, padding) {
+        var k_limit = 1.0 / ((in_channels * kernel_size * kernel_size) ** 0.5)
+        this.weight = tensor(randn([out_channels, in_channels, kernel_size, kernel_size]) * k_limit, true)
+        this.bias = tensor(randn([out_channels]) * 0.01, true)
+        this.params = [this.weight, this.bias]
+        this.stride = stride
+        this.padding = padding
+    }
+
+    def forward(x) {
+        return conv2d(x, this.weight, this.bias, this.stride, this.padding)
+    }
+}
+
+# --- Activations as Layers ---
+
+class ReLU extends Layer {
+    def forward(x) {
+        return relu(x)
+    }
+}
+
+class SigmoidLayer extends Layer {
+    def forward(x) {
+        return sigmoid(x)
+    }
+}
+
+# --- Container ---
+
+class Sequential extends Layer {
+    def init(layers) {
+        this.layers = layers
+        this.params = []
+        for l in layers {
+            for p in l.parameters() {
+                append(this.params, p)
+            }
+        }
+    }
+
+    def forward(x) {
+        var current = x
+        for l in this.layers {
+            current = l.forward(current)
+        }
+        return current
+    }
+}

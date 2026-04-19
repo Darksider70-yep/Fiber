@@ -1,0 +1,44 @@
+# 🚀 Fiber Neural Layers Demo
+
+from neural import Sequential, Linear, ReLU
+from math import abs
+
+print "--- Initializing Modular Network ---"
+
+# Build a Multi-Layer Perceptron (MLP)
+var model = Sequential([
+    Linear(2, 4),
+    ReLU(),
+    Linear(4, 1)
+])
+
+# Training Data (XOR-like problem)
+var x = tensor([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+var y_target = tensor([[0.0], [1.0], [1.0], [0.0]])
+
+# Optimizer for the whole model
+var opt = optimizer(model.parameters(), "adam", 0.1)
+
+print "Starting Training..."
+
+for i = 1 to 100 {
+    # Forward Pass
+    var y_pred = model.forward(x)
+    
+    # Compute Loss
+    var loss = mse_loss(y_pred, y_target)
+    
+    # Optimize
+    opt.zero_grad()
+    backward(loss)
+    opt.optimize()
+    
+    if i % 20 == 0 {
+        print "Epoch " + str(i) + " | Loss: " + str(loss)
+    }
+}
+
+print ""
+print "Training Complete!"
+var final_pred = model.forward(x)
+print "Final Predictions: " + str(final_pred)

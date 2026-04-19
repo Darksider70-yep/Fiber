@@ -1,0 +1,56 @@
+# 🚀 Fiber Library Stress Test (Deepened Suite)
+
+import math
+import io
+import string
+import net
+from data import DataFrame
+
+print "=== Fiber Library Stress Test ==="
+
+# 1. Advanced Math
+var angle = math.PI / 4 # 45 degrees
+print "[MATH] sin(PI/4): " + str(math.round(math.sin(angle), 4))
+print "[MATH] sqrt(144): " + str(math.sqrt(144))
+
+# 2. String & Hashing
+var raw_id = "fiber-2024"
+var padded = string.pad_left(raw_id, 15, "0")
+print "[STR]  Padded ID: " + padded
+print "[STR]  SHA256: " + string.sha256(padded)
+
+# 3. File System
+print "[IO]   Creating 'temp_test' directory..."
+io.mkdir("temp_test")
+io.write("temp_test/test.txt", "Fiber was here.")
+print "[IO]   Contents of 'temp_test': " + str(io.list("temp_test"))
+
+# 4. Networking
+var query = "neuro symbolic"
+var encoded = net.encode(query)
+print "[NET]  URL Encoded: " + encoded
+
+# 5. Dataframes (Sorting & Cleaning)
+var raw_data = [
+    {"name": "Alice", "score": 85},
+    {"name": "Bob", "score": 92},
+    {"name": "Charlie", "score": 78},
+    {"name": "NullPlayer", "score": None}
+]
+
+var df = DataFrame(raw_data)
+print "[DATA] Original Count: " + str(df.count())
+
+var clean_df = df.dropna("score")
+print "[DATA] Cleaned Count: " + str(clean_df.count())
+
+var sorted_df = clean_df.sort_by("score", false) # Descending
+var top_player = sorted_df.head(1).data()[0]
+print "[DATA] Top Scorer: " + top_player["name"] + " (" + str(top_player["score"]) + ")"
+
+# Cleanup
+io.remove("temp_test/test.txt")
+# (Directories require recursive delete which we haven't added yet, so we leave the folder)
+
+print "---------------------------------------"
+print "Library Deepening Test: SUCCESS"
