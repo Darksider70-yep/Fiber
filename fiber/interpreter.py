@@ -1,5 +1,5 @@
 from .ast_nodes import *
-from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal, FiberSymbolic, FiberTensor
+from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal, FiberSymbolic, FiberTensor, FiberOptimizer
 from .ai import AIBridge
 from .environment import Environment
 from .errors import FiberNameError, FiberRuntimeError
@@ -62,13 +62,16 @@ class Interpreter:
         self.global_env.set_local('grad', lambda t: t.grad if isinstance(t, FiberTensor) else None)
         self.global_env.set_local('zero_grad', lambda t: t.zero_grad() if isinstance(t, FiberTensor) else None)
         
-        # Manual parameter update (no-grad context)
+        # Manual parameter update
         def manual_step(param, lr):
             if not isinstance(param, FiberTensor) or param.grad is None:
                 return
             with torch.no_grad():
                 param.data -= lr * param.grad.data
         self.global_env.set_local('optimize_step', manual_step)
+
+        # High-Level Optimizer
+        self.global_env.set_local('optimizer', lambda params, opt_type="sgd", lr=0.01: FiberOptimizer(params, opt_type, lr))
 
     def _validate_module_name(self, module_name):
         if not MODULE_NAME_RE.match(module_name):
@@ -497,7 +500,6 @@ class Interpreter:
                 raw_r = r.data if isinstance(r, FiberTensor) else (r.expr if isinstance(r, FiberSymbolic) else r)
                 
                 res = None
-                # Support Torch operations in BinOp
                 if node.op == "PLUS": res = raw_l + raw_r
                 elif node.op == "MINUS": res = raw_l - raw_r
                 elif node.op == "MUL": res = raw_l * raw_r
@@ -505,7 +507,6 @@ class Interpreter:
                 
                 if res is not None:
                     if isinstance(res, torch.Tensor):
-                        # Detect if any original was a graduate
                         was_grad = (isinstance(l, FiberTensor) and l.data.requires_grad) or \
                                    (isinstance(r, FiberTensor) and r.data.requires_grad)
                         return FiberTensor(res, requires_grad=was_grad)
@@ -566,7 +567,6 @@ class Interpreter:
             idx = self.eval_expr(node.index, env)
             if not hasattr(obj, "__getitem__"):
                 raise FiberRuntimeError(f"Object of type {type(obj).__name__} not indexable")
-            # For FiberTensor, index access should remain a FiberTensor to track grads
             res = obj[idx]
             if isinstance(obj, FiberTensor) and not isinstance(res, FiberTensor):
                 return FiberTensor(res, requires_grad=obj.data.requires_grad)
@@ -615,7 +615,7 @@ class Interpreter:
                         return member(*args)
                     raise FiberNameError(f"Member {name} not callable on dict")
 
-                # ✅ Native runtime object (DSA, Tensors)
+                # ✅ Native runtime object (DSA, Tensors, Optimizers)
                 attr = getattr(target, name, None)
                 if callable(attr):
                     return attr(*args)
@@ -637,8 +637,8 @@ class Interpreter:
                 if node.name in obj:
                     return obj[node.name]
                 raise FiberNameError(f"{node.name} not found on dict")
-            # Support for FiberTensor properties (like .grad)
-            if isinstance(obj, FiberTensor):
+            # Support for FiberTensor & FiberOptimizer properties
+            if isinstance(obj, (FiberTensor, FiberOptimizer)):
                 return getattr(obj, node.name)
             raise FiberNameError(f"{node.name} not found")
 

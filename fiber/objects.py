@@ -69,7 +69,6 @@ class FiberTensor:
         if isinstance(data, torch.Tensor):
             self.data = data
         else:
-            # Convert to float for gradients if needed
             dtype = torch.float32 if requires_grad else None
             self.data = torch.tensor(data, requires_grad=requires_grad, dtype=dtype)
     
@@ -94,7 +93,7 @@ class FiberTensor:
         return str(self.data.detach().cpu().numpy() if self.data.requires_grad else self.data.cpu().numpy())
 
     def __getitem__(self, idx):
-        return FiberTensor(self.data[idx])
+        return FiberTensor(self.data[idx], requires_grad=self.data.requires_grad)
     
     def __setitem__(self, idx, val):
         v = val.data if isinstance(val, FiberTensor) else val
@@ -102,3 +101,28 @@ class FiberTensor:
         
     def __len__(self):
         return len(self.data)
+
+class FiberOptimizer:
+    def __init__(self, params, opt_type="sgd", lr=0.01):
+        # Filter only tensors that require grad
+        torch_params = []
+        for p in params:
+            if isinstance(p, FiberTensor) and p.data.requires_grad:
+                torch_params.append(p.data)
+        
+        if not torch_params:
+            raise ValueError("No trainable parameters provided to optimizer")
+
+        if opt_type.lower() == "adam":
+            self.optimizer = torch.optim.Adam(torch_params, lr=lr)
+        else:
+            self.optimizer = torch.optim.SGD(torch_params, lr=lr)
+
+    def optimize(self):
+        self.optimizer.step()
+
+    def zero_grad(self):
+        self.optimizer.zero_grad()
+
+    def __repr__(self):
+        return f'<Optimizer type={type(self.optimizer).__name__} lr={self.optimizer.param_groups[0]["lr"]}>'
