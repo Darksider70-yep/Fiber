@@ -2,7 +2,7 @@
     "name": "fiber-vscode",
     "displayName": "Fiber: High-Performance Neuro-Symbolic IDE",
     "description": "Professional support for the Fiber language: High-performance Neural & Symbolic computing.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "daksh-gehlot",
     "engines": {
         "vscode": "^1.75.0"
@@ -29,25 +29,38 @@
     "icon": "icon.png",
     "license": "MIT",
     "contributes": {
-        "languages": [{
-            "id": "fiber",
-            "aliases": ["Fiber", "fiber"],
-            "extensions": [".fib"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "fiber",
-            "scopeName": "source.fiber",
-            "path": "./syntaxes/fiber.tmLanguage.json"
-        }],
-        "snippets": [{
-            "language": "fiber",
-            "path": "./snippets/snippets.json"
-        }],
-        "themes": [{
-            "label": "Fiber Branded Dark",
-            "uiTheme": "vs-dark",
-            "path": "./themes/fiber-dark.json"
-        }]
+        "languages": [
+            {
+                "id": "fiber",
+                "aliases": [
+                    "Fiber",
+                    "fiber"
+                ],
+                "extensions": [
+                    ".fib"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "fiber",
+                "scopeName": "source.fiber",
+                "path": "./syntaxes/fiber.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "fiber",
+                "path": "./snippets/snippets.json"
+            }
+        ],
+        "themes": [
+            {
+                "label": "Fiber Branded Dark",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-dark.json"
+            }
+        ]
     }
 }
