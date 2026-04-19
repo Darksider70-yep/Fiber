@@ -2,7 +2,7 @@
 
 **Fiber** is a next-generation programming language designed to bridge the gap between high-level symbolic logic and low-level numerical computation. It provides a first-class developer experience for AI researchers, data scientists, and systems engineers.
 
-> **Status**: v0.3-beta "Standalone Mastery" 🚀
+> **Status**: v1.0.0 "Official Launch" 🌿 🚀
 
 ---
 
@@ -14,35 +14,24 @@
 
 ---
 
-## 🚀 Quick Start (Portable Mode)
+---
 
-Fiber is designed to be truly portable. You don't need Python to run it.
+## 🚀 Getting Started
 
-### **Installation**
-1.  Download the latest **`fiber.exe`** from the [Releases](https://github.com/Darksider70-yep/Fiber/releases) page.
-2.  Place it in your project directory.
-3.  (Optional) Add the folder to your system `PATH`.
+### **1. Portable Installation (Recommended)**
+Fiber is designed to be truly portable. You don't need Python or any external dependencies to run it.
 
-### **Your First Script**
-Create `hello.fib`:
-```fiber
-import math
-from data import DataFrame
+1.  Download the official **`fiber.exe`** from the **[v1.0.0 Release Page](https://github.com/Darksider70-yep/Fiber/releases/tag/v1.0.0)**.
+2.  Add the folder containing `fiber.exe` to your system **Environment Path**.
+3.  Run `fiber your_script.fib` from any terminal!
 
-print "=== Fiber 0.3 ==="
-var x = expr("x**2 + 5*x + 6")
-print "Symbolic Expression: " + str(x)
-print "Derivative: " + str(diff(x, "x"))
-## 🚀 Quick Start
+### **2. IDE Support (VS Code)**
+Get the professional developer experience:
+- Install the **[Fiber Extension](https://marketplace.visualstudio.com/items?itemName=daksh-gehlot.fiber-vscode)** from the VS Code Marketplace.
+- Enjoy syntax highlighting, snippets, and the custom **Fiber Branded Dark** theme.
 
-### Portable Installation (Recommended)
-You don't need Python to run Fiber! 
-1. Download the latest **`fiber.exe`** from the [GitHub Releases](https://github.com/Darksider70-yep/Fiber/releases).
-2. Add the folder to your Windows **Environment Path**.
-3. Run `fiber your_script.fib` from any terminal.
-
-### Python Installation (Source)
-If you wish to run Fiber from source:
+### **3. Python Installation (Source)**
+If you wish to run Fiber directly from source:
 ```bash
 python main-DARKZONE.py path/to/script.fib
 ```
