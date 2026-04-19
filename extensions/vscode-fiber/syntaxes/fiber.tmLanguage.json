@@ -36,7 +36,7 @@
                 "match": "\\b(var|const|static|final|def|class|struct|enum|extends)\\b"
             }, {
                 "name": "support.function.fiber",
-                "match": "\\b(print|append|len|range|expr|tensor|diff|subst|randn|matmul|relu|sigmoid|backward)\\b"
+                "match": "\\b(print|append|len|range|write_raw|str|int|float|input|expr|tensor|diff|simplify|solve|subst|matmul|relu|sigmoid|mse_loss|randn|rand|conv2d|backward|grad|zero_grad|optimize_step|optimizer|fs_read|fs_write|fs_append|fs_exists|fs_mkdir|fs_remove|fs_listdir|fs_rename|fs_size|fs_is_dir|fs_is_file|os_env|os_exec|os_sleep|time_now|time_format|time_parse|json_parse|json_str|csv_read_native|csv_write_native|sql_connect|sql_query|sql_exec|sql_close|http_req|str_split|str_join|str_replace|str_trim|str_contains|str_lower|str_upper|list_sum|list_mean|math_sin|math_cos|math_tan|math_asin|math_acos|math_atan|math_atan2|math_ceil|math_floor|math_round|math_sqrt|math_exp|math_log|math_log10|math_pi|math_e|os_platform|os_cpu_count|os_path_join|os_path_split|regex_match|regex_search|regex_replace|rand_int|vec_shuffle|vec_choice)\\b"
             }]
         },
         "numbers": {
@@ -57,7 +57,7 @@
         "constants": {
             "patterns": [{
                 "name": "constant.language.fiber",
-                "match": "\\b(true|false|None)\\b"
+                "match": "\\b(true|false|None|fiber_version)\\b"
             }]
         }
     }
