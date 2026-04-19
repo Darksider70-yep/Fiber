@@ -1,96 +1,87 @@
-# 🧠 AI & Symbolic Reasoning in Fiber
+# 🧠 Neuro-Symbolic Integration in Fiber 0.3
 
-Higher-order reasoning in Fiber is powered by a hybrid architecture that blends the abstract beauty of **Symbolic Logic** with the brute-force efficiency of **Numerical Tensors**.
+Fiber 0.3 introduces a modular **Neural Engine** built on a symbolic-numerical bridge. This document explains how to combine high-level algebraic theory with low-level tensor computation.
 
-## 🔄 The Reasoning Pipeline
+---
 
-Fiber uses a multi-stage pipeline to transform abstract mathematical intent into concrete numerical results.
+## 1. Modular Neural API
+
+The `lib/neural.fib` library provides a high-level API similar to PyTorch or Keras, but with first-class support for Fiber symbols.
+
+### **The Layer Model**
+Everything in Fiber's neural engine is a `Layer`. Layers manage their own `FiberTensor` parameters and handle forward propagation.
+
+```fiber
+from neural import Sequential, Linear, ReLU
+
+# A modular MLP
+var model = Sequential([
+    Linear(784, 256),
+    ReLU(),
+    Linear(256, 10)
+])
+
+# Inference
+var input = randn([1, 784])
+var output = model.forward(input)
+```
+
+---
+
+## 2. The Symbolic Bridge
+
+The power of Fiber lies in using symbolic math to define or refine neural parameters.
+
+### **Algebraic Weight Initialization**
+You can use symbolic formulas to derive constants for your network:
+
+```fiber
+var derivation = expr("sqrt(2 / (fan_in + fan_out))")
+var xavier_constant = subst(derivation, {"fan_in": 784, "fan_out": 256})
+
+var weights = randn([784, 256]) * xavier_constant
+```
+
+---
+
+## 3. Training & Optimization
+
+### **High-Level Optimizers**
+Use the `optimizer` built-in to manage gradient descent for your models:
+
+```fiber
+var model = ...
+var opt = optimizer(model.parameters(), "sgd", 0.01)
+
+# Training loop
+for i = 1 to 100 {
+    var pred = model.forward(X)
+    var loss = mse_loss(pred, target)
+    
+    zero_grad(model.parameters()) # Reset gradients
+    backward(loss)                # Compute gradients
+    opt.step()                    # Update weights
+}
+```
+
+---
+
+## 4. Why Neuro-Symbolic?
+
+Traditional neural networks are "black boxes." By using Fiber's symbolic engine, you can:
+1.  **Enforce Constraints**: Inject mathematical priors into your loss functions.
+2.  **Explainability**: Extract part of a neural network weight matrix and convert it back into a symbolic formula for human analysis.
+3.  **Efficiency**: Simplify complex math symbolically *before* converting it into a tensor operation.
+
+---
+
+## 📊 Processing Pipeline
 
 ```mermaid
 graph LR
-    A[String Input] --> B("expr parsing")
-    B --> C{Symbolic Manipulation}
-    C -->|diff| D[Derivative]
-    C -->|simplify| E[Simplified Expression]
-    C -->|solve| F[Roots/Solutions]
-    D --> G("subst mapping")
-    G --> H[Final Numeric Value]
-```
-
-## 1. Symbolic core (SymPy)
-
-Perform exact mathematical operations without rounding errors or loss of precision.
-
-| Operation | Syntax | Logic |
-| --- | --- | --- |
-| **Parsing** | `expr("x^2")` | Converts text to a symbolic object. |
-| **Differentiation** | `diff(e, "x")` | Calculates the formal derivative. |
-| **Equation Solving**| `solve(e, "x")` | Returns instances where `e = 0`. |
-| **Simplification** | `simplify(e)` | Algebraically reduces the expression. |
-
-### Finding Critical Points
-```fiber
-var e = expr("x^2 - 4*x + 4")
-var de = diff(e, "x")  # 2*x - 4
-
-var critical_pts = solve(de, "x") 
-print "Minimum found at x = " + str(critical_pts[0])
-```
-
----
-
-## 2. The Neural Engine (PyTorch)
-
-Fiber features a native **Neural Engine** with built-in automatic differentiation (Autograd). This allows you to build and train Machine Learning models directly in Fiber syntax.
-
-### Trainable Tensors
-Mark any tensor as trainable by passing `true` to the constructor.
-```fiber
-var weights = tensor([0.5, -0.1], true) # Tracks gradients
-```
-
-### Autograd Primitives
-- **`backward(loss)`**: Triggers the reverse-mode auto-differentiation pass.
-- **`grad(param)`**: Retrieves the calculated gradient for a parameter.
-- **`zero_grad(param)`**: Resets the gradient buffer.
-
-### High-Level Optimizers
-Fiber provides managed optimizer objects to handle parameter updates automatically.
-
-```fiber
-var w = tensor([0.0], true)
-var b = tensor([0.0], true)
-
-# Support for "sgd" and "adam"
-var opt = optimizer([w, b], "adam", 0.01)
-
-# Inside training loop:
-opt.zero_grad()
-var loss = mse_loss(predict(x), target)
-backward(loss)
-opt.optimize()
-```
-
----
-
-## 3. Activation & Loss Functions
-
-Native primitives for building layers:
-- `relu(t)`: Rectified Linear Unit.
-- `sigmoid(t)`: Logistic sigmoid.
-- `mse_loss(pred, target)`: Mean Squared Error.
-- `matmul(a, b)`: Matrix multiplication.
-
----
-
-## 🚀 Advanced Use Case: Neuro-Symbolic Logic
-Combine symbolic derivatives with neural training:
-```fiber
-var logic_expr = expr("w * x + b")
-var symbolic_grad = diff(logic_expr, "w")
-
-# Use symbolic logic to guide numerical updates
-var w_val = 10.0
-var guidance = subst(symbolic_grad, {"w": w_val, "x": 1.0})
-# ... apply to neural weights ...
+    A["Symbolic Input"] --> B["SymPy Simplification"]
+    B --> C["Tensor Mapping"]
+    C --> D["Neural Forward Pass"]
+    D --> E["Autograd / Backward"]
+    E --> F["Parameter Update"]
 ```
