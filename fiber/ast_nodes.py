@@ -140,6 +140,10 @@ class ListLiteral(Node):
     def __init__(self, elements):
         self.elements = elements
 
+class DictLiteral(Node):
+    def __init__(self, pairs):
+        self.pairs = pairs
+
 class StructDef(Node):
     def __init__(self, name, fields):
         self.name = name

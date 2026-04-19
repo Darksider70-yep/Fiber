@@ -477,4 +477,20 @@ class Parser:
             self.eat("RBRACKET")
             return ListLiteral(elems)
 
+        if t.type == "LBRACE":
+            self.eat("LBRACE")
+            pairs = []
+            if self.current().type != "RBRACE":
+                while True:
+                    key = self.expr()
+                    self.eat("COLON")
+                    val = self.expr()
+                    pairs.append((key, val))
+                    if self.current().type == "COMMA":
+                        self.eat("COMMA")
+                        continue
+                    break
+            self.eat("RBRACE")
+            return DictLiteral(pairs)
+
         raise FiberSyntaxError(f"Unexpected token {t.type} at line {t.line}")

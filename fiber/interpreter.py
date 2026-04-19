@@ -1,5 +1,6 @@
 from .ast_nodes import *
-from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal
+from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal, FiberSymbolic, FiberTensor
+from .ai import AIBridge
 from .environment import Environment
 from .errors import FiberNameError, FiberRuntimeError
 import os
@@ -38,6 +39,17 @@ class Interpreter:
         self.global_env.set_local("Stack", FiberStack)
         self.global_env.set_local("Queue", FiberQueue)
         self.global_env.set_local("Set", FiberSet)
+
+        # -----------------------------
+        # AI & Symbolic Builtins
+        # -----------------------------
+        self.global_env.set_local('expr', lambda s: FiberSymbolic(AIBridge.parse_expr(s)))
+        self.global_env.set_local('diff', lambda e, v: FiberSymbolic(AIBridge.differentiate(e.expr if isinstance(e, FiberSymbolic) else e, v)))
+        self.global_env.set_local('simplify', lambda e: FiberSymbolic(AIBridge.simplify(e.expr if isinstance(e, FiberSymbolic) else e)))
+        self.global_env.set_local('tensor', lambda d: FiberTensor(AIBridge.to_tensor(d)))
+        self.global_env.set_local('matmul', lambda a, b: FiberTensor(AIBridge.matmul(a.data if isinstance(a, FiberTensor) else a, b.data if isinstance(b, FiberTensor) else b)))
+        self.global_env.set_local('solve', lambda e, v: [FiberSymbolic(sol) for sol in AIBridge.solve(e.expr if isinstance(e, FiberSymbolic) else e, v)])
+        self.global_env.set_local('subst', lambda e, m: AIBridge.subst(e.expr if isinstance(e, FiberSymbolic) else e, m))
 
     def _validate_module_name(self, module_name):
         if not MODULE_NAME_RE.match(module_name):
@@ -430,7 +442,7 @@ class Interpreter:
 
         return self.eval_expr(node, env)
 
-    # Expression evaluation (same robust conversions as before)
+    # Expression evaluation
     def eval_expr(self, node, env):
         if node is None:
             return None
@@ -460,6 +472,22 @@ class Interpreter:
         if isinstance(node, BinOp):
             l = self.eval_expr(node.left, env)
             r = self.eval_expr(node.right, env)
+
+            # --- AI: Symbolic & Tensor Overloading ---
+            if isinstance(l, (FiberTensor, FiberSymbolic)) or isinstance(r, (FiberTensor, FiberSymbolic)):
+                raw_l = l.data if isinstance(l, FiberTensor) else (l.expr if isinstance(l, FiberSymbolic) else l)
+                raw_r = r.data if isinstance(r, FiberTensor) else (r.expr if isinstance(r, FiberSymbolic) else r)
+                
+                res = None
+                if node.op == "PLUS": res = raw_l + raw_r
+                elif node.op == "MINUS": res = raw_l - raw_r
+                elif node.op == "MUL": res = raw_l * raw_r
+                elif node.op == "DIV": res = raw_l / raw_r
+                
+                if res is not None:
+                    if isinstance(l, FiberTensor) or isinstance(r, FiberTensor):
+                        return FiberTensor(res)
+                    return FiberSymbolic(res)
 
             def try_number(v):
                 try:
@@ -507,6 +535,9 @@ class Interpreter:
 
         if isinstance(node, ListLiteral):
             return [self.eval_expr(e, env) for e in node.elements]
+
+        if isinstance(node, DictLiteral):
+            return {self.eval_expr(k, env): self.eval_expr(v, env) for k, v in node.pairs}
 
         if isinstance(node, Index):
             obj = self.eval_expr(node.obj, env)

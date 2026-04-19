@@ -1,0 +1,45 @@
+# 🌿 Fiber AI & Symbolic Reasoning Demo
+
+print "--- 1. Symbolic Reasoning ---"
+var e = expr("x^2 + 5*x + 6")
+print "Expression: " + str(e)
+
+var de = diff(e, "x")
+print "Derivative (d/dx): " + str(de)
+
+var simple = simplify(expr("(x + 2) * (x + 3)"))
+print "Simplified (x+2)(x+3): " + str(simple)
+
+print ""
+print "--- 2. Numerical Tensor Operations ---"
+var weights = tensor([[0.5, 1.2], [0.8, -0.4]])
+var inputs = tensor([10, 5])
+
+print "Weights Matrix:"
+print weights
+
+print "Inputs Vector:"
+print inputs
+
+var result = matmul(weights, inputs)
+print "Result (Weights * Inputs):"
+print result
+
+print ""
+print "--- 3. Combined Reasoning ---"
+# Use symbolic derivative to update a parameter
+var learning_rate = 0.1
+var x_val = 10.0
+
+# Calculate exact gradient numerically using subst
+var grad_at_x = subst(de, {"x": x_val})
+print "Gradient at x=10: " + str(grad_at_x)
+
+var new_x = x_val - learning_rate * grad_at_x
+print "Updated parameter x (gradient descent): " + str(new_x)
+
+print ""
+print "--- 4. Equation Solving ---"
+var roots = solve(e, "x")
+print "Roots of x^2 + 5x + 6 = 0: "
+print roots

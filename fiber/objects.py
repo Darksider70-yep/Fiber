@@ -1,5 +1,7 @@
 from .environment import Environment
 from .ast_nodes import FuncDef
+import numpy as np
+import sympy as sp
 
 class FiberFunction:
     def __init__(self, name, params, body, closure):
@@ -58,3 +60,25 @@ class FiberInstance:
         self.fields[name] = value
     def __repr__(self):
         return f'<{self.klass.name} instance>'
+
+class FiberSymbolic:
+    def __init__(self, expr):
+        self.expr = expr
+    def __repr__(self):
+        return f'Symbolic({self.expr})'
+    def __str__(self):
+        return str(self.expr)
+
+class FiberTensor:
+    def __init__(self, data):
+        self.data = np.array(data)
+    def __repr__(self):
+        return f'Tensor({self.data})'
+    def __str__(self):
+        return str(self.data)
+    def __getitem__(self, idx):
+        return self.data[idx]
+    def __setitem__(self, idx, val):
+        self.data[idx] = val
+    def __len__(self):
+        return len(self.data)
