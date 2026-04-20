@@ -6,11 +6,11 @@ venv/
 .env
 
 # Fiber Build Artifacts
-build/
-dist/
-build_fiber/
+build*/
+dist*/
 *.fibc
 *.spec
+*.exe
 
 # Local Data
 *.db
