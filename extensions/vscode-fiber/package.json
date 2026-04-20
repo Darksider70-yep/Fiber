@@ -2,7 +2,7 @@
     "name": "fiber-vscode",
     "displayName": "Fiber: High-Performance Neuro-Symbolic IDE",
     "description": "Professional support for the Fiber language: High-performance Neural & Symbolic computing.",
-    "version": "2.0.1",
+    "version": "2.0.3",
     "publisher": "daksh-gehlot",
     "main": "./src/extension.js",
     "engines": {
@@ -89,6 +89,16 @@
                 "uiTheme": "vs-dark",
                 "path": "./themes/fiber-dark.json"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "Fiber",
+            "properties": {
+                "fiber.path": {
+                    "type": "string",
+                    "default": "fiber",
+                    "description": "Path to the Fiber executable (fiber.exe). If it's already in your system PATH, you can leave this as 'fiber'."
+                }
+            }
+        }
     }
 }

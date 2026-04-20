@@ -33,8 +33,13 @@ function activate(context) {
         }
         
         terminal.show();
+        
+        // Get the configured path to the fiber executable
+        const config = vscode.workspace.getConfiguration('fiber');
+        const fiberPath = config.get('path') || 'fiber';
+
         // Run the builder command
-        terminal.sendText(`fiber -b "${filePath}"`);
+        terminal.sendText(`"${fiberPath}" -b "${filePath}"`);
     });
 
     context.subscriptions.push(buildCmd);
