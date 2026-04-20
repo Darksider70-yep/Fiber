@@ -1,0 +1,30 @@
+# 🌿 Fiber Logic: Classical Syllogism Example
+# demonstrating the KnowledgeBase and Resolution Inference
+
+import logic
+
+print("--- Socrates Syllogism ---")
+
+var kb = logic.KnowledgeBase()
+
+# 1. Fact: Socrates is a Man
+kb.tell(expr("Man_Socrates"))
+
+# 2. Rule: All Men are Mortal (Man >> Mortal)
+kb.tell(logic.implies(expr("Man_Socrates"), expr("Mortal_Socrates")))
+
+print("KB State: " + str(kb.facts))
+
+# 3. Query: Is Socrates Mortal?
+var result = kb.ask(expr("Mortal_Socrates"))
+
+if result {
+    print("RESULT: Socrates is definitely mortal. Logic holds.")
+} else {
+    print("RESULT: Could not prove mortality.")
+}
+
+# 4. Try another query
+print("\n--- Another Query ---")
+var is_god = kb.ask(expr("IsGod_Socrates"))
+print("Is Socrates a God? " + str(is_god))

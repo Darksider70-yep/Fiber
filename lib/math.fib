@@ -21,6 +21,21 @@ def log10(n) { return math_log10(n) }
 def ceil(n) { return math_ceil(n) }
 def floor(n) { return math_floor(n) }
 def round(n, p) { return math_round(n, p) }
+def abs(n) { return math_abs(n) }
+
+def gcd(a, b) {
+    while b != 0 {
+        var t = b
+        b = a % b
+        a = t
+    }
+    return a
+}
+
+def lcm(a, b) {
+    if a == 0 or b == 0 { return 0 }
+    return abs(a * b) / gcd(a, b)
+}
 
 def is_prime(n) {
     if n < 2 { return false }

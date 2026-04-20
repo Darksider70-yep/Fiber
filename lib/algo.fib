@@ -14,10 +14,24 @@ def filter(l, fn) {
     var res = []
     for item in l {
         if fn(item) {
-            append(res, l)
+            append(res, item)
         }
     }
     return res
+}
+
+def bubble_sort(l) {
+    var n = len(l)
+    for i = 0 to n - 1 {
+        for j = 0 to n - i - 2 {
+            if l[j] > l[j+1] {
+                var temp = l[j]
+                l[j] = l[j+1]
+                l[j+1] = temp
+            }
+        }
+    }
+    return l
 }
 
 def reduce(l, fn, initial) {

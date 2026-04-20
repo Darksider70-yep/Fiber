@@ -1,5 +1,25 @@
-# 🎨 Fiber GUI Library (Emerald Edition)
-# Wraps native Tkinter builtins
+# 🎨 Fiber GUI Library (Emerald Edition v4.0)
+# Sophisticated Tkinter wrappers for Fiber apps
+
+class Widget {
+    def init(raw) {
+        this.raw = raw
+    }
+
+    def grid(r, c) {
+        gui_grid(this.raw, r, c)
+        return this
+    }
+
+    def pack(side="top") {
+        gui_pack(this.raw, side)
+        return this
+    }
+
+    def get() {
+        return gui_get(this.raw)
+    }
+}
 
 class Window {
     def init(title, width, height) {
@@ -7,11 +27,23 @@ class Window {
     }
 
     def label(text) {
-        return gui_label(text)
+        return Widget(gui_label(text))
     }
 
     def button(text, callback) {
-        return gui_button(text, callback)
+        return Widget(gui_button(text, callback))
+    }
+
+    def entry() {
+        return Widget(gui_entry())
+    }
+
+    def frame() {
+        return Widget(gui_frame())
+    }
+
+    def text_box() {
+        return Widget(gui_text())
     }
 
     def show() {

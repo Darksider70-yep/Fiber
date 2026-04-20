@@ -35,9 +35,14 @@ TOKEN_SPEC = [
     ("PLUS", r"\+"),
     ("MINUS", r"-"),
     ("POWER", r"\*\*"),
+    ("IMPLIES", r">>"),
     ("MUL", r"\*"),
     ("DIV", r"/"),
     ("MOD", r"%"),
+    ("AMP", r"&"),
+    ("PIPE", r"\|"),
+    ("TILDE", r"~"),
+    ("CARET", r"\^"),
 
     # Names & whitespace
     ("NAME", r"[A-Za-z_][A-Za-z0-9_]*"),

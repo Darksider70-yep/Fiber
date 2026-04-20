@@ -1,0 +1,49 @@
+# 🌿 Fiber Logic: Neuro-Symbolic Training Example
+# Demonstrating how to use logical rules as differentiable loss functions
+
+import logic
+import neural
+
+print("--- Neuro-Symbolic Training Demo ---")
+
+# Task: We want two parameters 'A' and 'B' to satisfy: A | B (One must be high)
+# and we also want them to be DIFFERENT: ~(A == B)
+
+var A = tensor([0.1], true) # Start small
+var B = tensor([0.1], true) # Start small
+
+var rule1 = expr("A | B")
+var rule2 = not expr("A == B")
+
+var opt = optimizer([A, B], "sgd", 0.1)
+
+print("Initial A: " + str(A))
+print("Initial B: " + str(B))
+print("-" * 20)
+
+for i = 1 to 50 {
+    # 1. Map symbols to tensors
+    var mappings = {"A": A, "B": B}
+    
+    # 2. Get logical losses (Product T-Norm)
+    # We want to MAXIMIZE the truth value, so loss is (1 - truth)
+    var truth1 = logic.as_loss(rule1, mappings, "product")
+    var truth2 = logic.as_loss(rule2, mappings, "product")
+    
+    var loss = (1.0 - truth1) + (1.0 - truth2)
+    
+    # 3. Optimize
+    zero_grad(A)
+    zero_grad(B)
+    backward(loss)
+    opt.step()
+    
+    if (i % 10 == 0) {
+        print("Step " + str(i) + " | Loss: " + str(loss))
+    }
+}
+
+print("-" * 20)
+print("Final A: " + str(A))
+print("Final B: " + str(B))
+print("Final Rule Truth: " + str(logic.as_loss(rule1 & rule2, {"A": A, "B": B})))

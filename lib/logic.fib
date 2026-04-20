@@ -1,0 +1,137 @@
+# 🌿 Fiber Logic Library (Extensive AI Training Edition)
+
+# -----------------------------
+# Propositional Logic
+# -----------------------------
+
+def implies(a, b) {
+    return logic_implies(a, b)
+}
+
+def equivalent(a, b) {
+    return logic_equiv(a, b)
+}
+
+def sat(e) {
+    return logic_sat(e)
+}
+
+def cnf(e) {
+    return logic_cnf(e)
+}
+
+def dnf(e) {
+    return logic_dnf(e)
+}
+
+def simplify(e) {
+    return logic_simplify(e)
+}
+
+# -----------------------------
+# Predicate Logic
+# -----------------------------
+
+def forall(domain, predicate) {
+    for item in domain {
+        if not predicate(item) {
+            return false
+        }
+    }
+    return true
+}
+
+def exists(domain, predicate) {
+    for item in domain {
+        if predicate(item) {
+            return true
+        }
+    }
+    return false
+}
+
+# -----------------------------
+# Knowledge Base (Resolution-based)
+# -----------------------------
+
+class KnowledgeBase {
+    def init() {
+        this.facts = []
+    }
+
+    def tell(sentence) {
+        # sentence can be symbolic or a list of symbols
+        append(this.facts, sentence)
+    }
+
+    def ask(query) {
+        # Proof by contradiction: KB & ~query must be unsatisfiable
+        var kb_sentence = this.facts[0]
+        for i = 1 to (len(this.facts) - 1) {
+            kb_sentence = kb_sentence & this.facts[i]
+        }
+        
+        var combined = kb_sentence & (~query)
+        var result = logic_sat(combined)
+        # print("DEBUG - Combined: " + str(combined))
+        # print("DEBUG - Result: " + str(result))
+        
+        # If result is False, it's unsatisfiable -> Proof complete!
+        if result == false {
+            return true
+        }
+        return false
+    }
+    
+    def clear() {
+        this.facts = []
+    }
+}
+
+# -----------------------------
+# AI Training Bridge
+# -----------------------------
+
+def as_loss(expr, mappings, norm="product") {
+    # expr: symbolic logic
+    # mappings: dict of {symbol_name: tensor}
+    # norm: "product", "godel", "lukasiewicz"
+    return logic_to_loss(expr, mappings, norm)
+}
+
+
+# -----------------------------
+# Utilities
+# -----------------------------
+
+def truth_table(symbols, expr) {
+    print("Truth Table for: " + str(expr))
+    # Basic truth table generator
+    var header = ""
+    for s in symbols { header = header + str(s) + " | " }
+    header = header + "Result"
+    print(header)
+    print("-" * len(header))
+    
+    # Generate rows (2^n)
+    var n = len(symbols)
+    # We use recursion or bit manipulation
+    # For now, simplistic implementation for small N
+    def generate(idx, current_map) {
+        if idx == n {
+            var val = subst(expr, current_map)
+            var row = ""
+            for s in symbols { row = row + str(current_map[str(s)]) + " | " }
+            print(row + str(val))
+            return
+        }
+        
+        current_map[str(symbols[idx])] = true
+        generate(idx + 1, current_map)
+        
+        current_map[str(symbols[idx])] = false
+        generate(idx + 1, current_map)
+    }
+    
+    generate(0, {})
+}

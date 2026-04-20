@@ -5,15 +5,24 @@ import numpy as np
 import sympy as sp
 
 class FiberFunction:
-    def __init__(self, name, params, body, closure):
+    def __init__(self, name, params, body, closure, defaults=None):
         self.name = name
         self.params = params
         self.body = body
         self.closure = closure
+        self.defaults = defaults or {}
+
     def call(self, interpreter, args, this=None):
         env = Environment(parent=self.closure)
         for i, p in enumerate(self.params):
-            env.set_local(p, args[i] if i < len(args) else None)
+            val = None
+            if i < len(args):
+                val = args[i]
+            elif p in self.defaults:
+                val = interpreter.eval_expr(self.defaults[p], env)
+            
+            env.set_local(p, val)
+
         if this is not None:
             env.set_local('this', this)
         try:
@@ -99,8 +108,28 @@ class FiberTensor:
         v = val.data if isinstance(val, FiberTensor) else val
         self.data[idx] = v
         
-    def __len__(self):
-        return len(self.data)
+    def __add__(self, other):
+        o = other.data if isinstance(other, FiberTensor) else other
+        return FiberTensor(self.data + o, requires_grad=self.data.requires_grad or (isinstance(other, FiberTensor) and other.data.requires_grad))
+    
+    def __sub__(self, other):
+        o = other.data if isinstance(other, FiberTensor) else other
+        return FiberTensor(self.data - o, requires_grad=self.data.requires_grad or (isinstance(other, FiberTensor) and other.data.requires_grad))
+    
+    def __mul__(self, other):
+        o = other.data if isinstance(other, FiberTensor) else other
+        return FiberTensor(self.data * o, requires_grad=self.data.requires_grad or (isinstance(other, FiberTensor) and other.data.requires_grad))
+
+    def __truediv__(self, other):
+        o = other.data if isinstance(other, FiberTensor) else other
+        return FiberTensor(self.data / o, requires_grad=self.data.requires_grad or (isinstance(other, FiberTensor) and other.data.requires_grad))
+
+    def __radd__(self, other): return self.__add__(other)
+    def __rsub__(self, other): 
+        return FiberTensor(other - self.data, requires_grad=self.data.requires_grad)
+    def __rmul__(self, other): return self.__mul__(other)
+    def __rtruediv__(self, other):
+        return FiberTensor(other / self.data, requires_grad=self.data.requires_grad)
 
 class FiberOptimizer:
     def __init__(self, params, opt_type="sgd", lr=0.01):
@@ -118,7 +147,7 @@ class FiberOptimizer:
         else:
             self.optimizer = torch.optim.SGD(torch_params, lr=lr)
 
-    def optimize(self):
+    def step(self):
         self.optimizer.step()
 
     def zero_grad(self):

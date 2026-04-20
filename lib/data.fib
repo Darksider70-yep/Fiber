@@ -11,7 +11,7 @@ class DataFrame {
 
     def head(n) {
         var res = []
-        for i = 0 to n {
+        for i = 0 to n - 1 {
             if i < len(this.rows) {
                 append(res, this.rows[i])
             }
@@ -53,17 +53,24 @@ class DataFrame {
         return len(this.rows)
     }
 
+    def tail(n) {
+        var res = []
+        var start = len(this.rows) - n
+        if start < 0 { start = 0 }
+        for i = start to len(this.rows) - 1 {
+            append(res, this.rows[i])
+        }
+        return DataFrame(res)
+    }
+
     def describe() {
-        # Return a dictionary of basic stats for performance/programmatic use
-        var stats = {}
-        if len(this.rows) == 0 { return stats }
-        
-        # Identify numeric columns from first row
-        var first = this.rows[0]
-        # We can't easily iterate keys in Fiber 0.2 yet without a builtin
-        # So we expect the user to call it or we do a fixed pass if we had keys()
-        # For now, let's assume we implement a basic summary of what we can
-        return "DataFrame Summary: " + str(len(this.rows)) + " rows"
+        var keys = []
+        if len(this.rows) > 0 {
+            keys = dict_keys(this.rows[0])
+        }
+        var summary = "DataFrame (" + str(len(this.rows)) + " rows)\n"
+        summary = summary + "Columns: " + str(keys)
+        return summary
     }
 
     # --- Cleaning ---

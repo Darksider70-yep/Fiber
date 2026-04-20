@@ -18,7 +18,29 @@ def is_file(path) { return fs_is_file(path) }
 def join_path(args) { return os_path_join(args) }
 def split_path(path) { return os_path_split(path) }
 
-# Binary I/O (Placeholder for v1.1)
-def copy(src, dest) {
-    write(dest, read(src))
+class File {
+    def init(path, mode="r") {
+        this.path = path
+        this.mode = mode
+    }
+
+    def read() {
+        return fs_read(this.path)
+    }
+
+    def write(content) {
+        fs_write(this.path, content)
+    }
+
+    def append(content) {
+        fs_append(this.path, content)
+    }
+
+    def exists() {
+        return fs_exists(this.path)
+    }
+}
+
+def open(path, mode) {
+    return File(path, mode)
 }

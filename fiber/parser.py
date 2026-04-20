@@ -1,5 +1,8 @@
 from .ast_nodes import *
 from .errors import FiberSyntaxError
+from .lexer import KEYWORDS
+
+KEYWORDS_SET_TYPES = {k.upper() for k in KEYWORDS}
 
 
 class Parser:
@@ -216,27 +219,34 @@ class Parser:
     def parse_params(self):
         self.eat("LPAREN")
         params = []
+        defaults = {}
         if self.current().type != "RPAREN":
             while True:
-                params.append(self.eat("NAME").value)
+                name = self.eat("NAME").value
+                params.append(name)
+                
+                if self.current().type == "ASSIGN":
+                    self.eat("ASSIGN")
+                    defaults[name] = self.expr()
+                
                 if self.current().type == "COMMA":
                     self.eat("COMMA")
                     continue
                 break
         self.eat("RPAREN")
-        return params
+        return params, defaults
 
     def function_def(self):
         self.eat("DEF")
         name = self.eat("NAME").value
-        params = self.parse_params()
-        return FuncDef(name, params, self.block())
+        params, defaults = self.parse_params()
+        return FuncDef(name, params, self.block(), defaults)
 
     def method_def(self):
         self.eat("DEF")
         name = self.eat("NAME").value
-        params = self.parse_params()
-        return Method(name, params, self.block())
+        params, defaults = self.parse_params()
+        return Method(name, params, self.block(), defaults)
 
     def class_def(self):
         self.eat("CLASS")
@@ -423,7 +433,35 @@ class Parser:
         if self.current().type == "NOT":
             self.eat("NOT")
             return UnaryOp("NOT", self.not_expr())
-        return self.compare()
+        return self.bitwise_or()
+
+    def bitwise_or(self):
+        node = self.bitwise_xor()
+        while self.current().type == "PIPE":
+            self.eat("PIPE")
+            node = BinOp(node, "PIPE", self.bitwise_xor())
+        return node
+
+    def bitwise_xor(self):
+        node = self.bitwise_and()
+        while self.current().type == "CARET":
+            self.eat("CARET")
+            node = BinOp(node, "CARET", self.bitwise_and())
+        return node
+
+    def bitwise_and(self):
+        node = self.implies_expr()
+        while self.current().type == "AMP":
+            self.eat("AMP")
+            node = BinOp(node, "AMP", self.implies_expr())
+        return node
+
+    def implies_expr(self):
+        node = self.compare()
+        while self.current().type == "IMPLIES":
+            self.eat("IMPLIES")
+            node = BinOp(node, "IMPLIES", self.compare())
+        return node
 
     def compare(self):
         node = self.sum_expr()
@@ -457,6 +495,9 @@ class Parser:
         if self.current().type == "MINUS":
             self.eat("MINUS")
             return UnaryOp("MINUS", self.factor())
+        if self.current().type == "TILDE":
+            self.eat("TILDE")
+            return UnaryOp("TILDE", self.factor())
         return self.primary()
 
     # -------------------------------------------------
@@ -506,7 +547,12 @@ class Parser:
                     node = Call(node, args)
                 elif self.current().type == "DOT":
                     self.eat("DOT")
-                    node = MemberAccess(node, self.eat("NAME").value)
+                    tok = self.current()
+                    if tok.type == "NAME" or tok.type in KEYWORDS_SET_TYPES:
+                        self.eat() # consume name or keyword
+                        node = MemberAccess(node, tok.value)
+                    else:
+                        raise FiberSyntaxError(f"Expected member name, got {tok.type} at line {tok.line}")
                 elif self.current().type == "LBRACKET":
                     self.eat("LBRACKET")
                     idx = self.expr()

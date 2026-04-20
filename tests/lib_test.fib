@@ -1,0 +1,40 @@
+# 🧪 Fiber Standard Library Verification
+
+import math
+import algo
+import io
+import data
+
+print("--- math.fib ---")
+print("abs(-10): " + str(math.abs(-10)))
+print("gcd(15, 20): " + str(math.gcd(15, 20)))
+print("lcm(4, 6): " + str(math.lcm(4, 6)))
+
+print("\n--- algo.fib ---")
+var test_list = [1, 5, 2, 8, 3]
+print("Original: " + str(test_list))
+print("Bubble Sort: " + str(algo.bubble_sort(test_list)))
+def greater_than_three(x) { return x > 3 }
+var filtered = algo.filter(test_list, greater_than_three)
+print("Filtered (>3): " + str(filtered))
+
+print("\n--- io.fib ---")
+io.mkdir("scratch")
+var f = io.open("scratch/test_file.txt", "w")
+f.write("Hello Fiber World!")
+print("File exists: " + str(f.exists()))
+var content = f.read()
+print("File content: " + content)
+
+print("\n--- data.fib ---")
+var rows = [
+    {"name": "Alice", "age": 25},
+    {"name": "Bob", "age": 30},
+    {"name": "Charlie", "age": 35}
+]
+var df = data.dataframe(rows)
+print(df.describe())
+print("Column age mean: " + str(df.mean("age")))
+print("Head 2: " + str(df.head(2).rows))
+
+print("\nVerification Complete.")

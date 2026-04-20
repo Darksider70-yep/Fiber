@@ -42,10 +42,11 @@ class Print(Node):
         self.expr = expr
 
 class FuncDef(Node):
-    def __init__(self, name, params, body):
+    def __init__(self, name, params, body, defaults=None):
         self.name = name
         self.params = params
         self.body = body
+        self.defaults = defaults or {}
 
 class Return(Node):
     def __init__(self, expr=None):
@@ -58,10 +59,11 @@ class ClassDef(Node):
         self.parent = parent
 
 class Method(Node):
-    def __init__(self, name, params, body):
+    def __init__(self, name, params, body, defaults=None):
         self.name = name
         self.params = params
         self.body = body
+        self.defaults = defaults or {}
 
 class If(Node):
     def __init__(self, cond, then_branch, else_branch=None):

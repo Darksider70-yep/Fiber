@@ -12,6 +12,7 @@ from .parser import Parser
 from .dsa import FiberStack, FiberQueue, FiberSet
 from . import compiler
 import codecs
+import sympy as sp
 
 
 class BreakSignal(Exception): pass
@@ -41,6 +42,7 @@ class Interpreter:
         self.global_env.set_local('append', lambda arr, val: (arr.append(val), arr)[1])
         self.global_env.set_local('range', lambda start, end=None, step=None: list(range(int(start), int(end) if end is not None else int(start), int(step) if step is not None else 1)) if end is not None else list(range(int(start))))
         self.global_env.set_local('write_raw', lambda x: sys.stdout.write(str(x)) or sys.stdout.flush())
+        self.global_env.set_local('dict_keys', lambda d: list(d.keys()) if isinstance(d, dict) else [])
 
         def fiber_help(obj=None):
             if obj is None:
@@ -69,6 +71,16 @@ class Interpreter:
         self.global_env.set_local('simplify', lambda e: FiberSymbolic(AIBridge.simplify(e.expr if isinstance(e, FiberSymbolic) else e)))
         self.global_env.set_local('solve', lambda e, v: [FiberSymbolic(sol) for sol in AIBridge.solve(e.expr if isinstance(e, FiberSymbolic) else e, v)])
         self.global_env.set_local('subst', lambda e, m: AIBridge.subst(e.expr if isinstance(e, FiberSymbolic) else e, m))
+
+        # -----------------------------
+        # Logical Builtins
+        # -----------------------------
+        self.global_env.set_local('logic_implies', lambda a, b: FiberSymbolic(AIBridge.implies(a.expr if isinstance(a, FiberSymbolic) else a, b.expr if isinstance(b, FiberSymbolic) else b)))
+        self.global_env.set_local('logic_equiv', lambda a, b: FiberSymbolic(AIBridge.equivalent(a.expr if isinstance(a, FiberSymbolic) else a, b.expr if isinstance(b, FiberSymbolic) else b)))
+        self.global_env.set_local('logic_cnf', lambda e: FiberSymbolic(AIBridge.to_cnf(e.expr if isinstance(e, FiberSymbolic) else e)))
+        self.global_env.set_local('logic_dnf', lambda e: FiberSymbolic(AIBridge.to_dnf(e.expr if isinstance(e, FiberSymbolic) else e)))
+        self.global_env.set_local('logic_sat', lambda e: AIBridge.satisfiable(e.expr if isinstance(e, FiberSymbolic) else e))
+        self.global_env.set_local('logic_to_loss', lambda e, m, n="product": AIBridge.logic_to_loss(e.expr if isinstance(e, FiberSymbolic) else e, m, n))
 
         # -----------------------------
         # Neural Engine Builtins
@@ -248,6 +260,7 @@ class Interpreter:
         self.global_env.set_local("math_exp", lambda n: pymath.exp(n))
         self.global_env.set_local("math_log", lambda n, b=pymath.e: pymath.log(n, b))
         self.global_env.set_local("math_log10", lambda n: pymath.log10(n))
+        self.global_env.set_local("math_abs", lambda n: abs(n))
         
         # Mathematical Constants
         self.global_env.set_local("math_pi", pymath.pi)
@@ -288,24 +301,50 @@ class Interpreter:
             
         def gui_button(text, func):
             if not self.gui_root: return
-            # Wrap function call
             def cmd():
-                if callable(func):
-                    # We might need to run this in Fiber context
-                    # For simplicity, we just call it if it's a Fiber function
-                    from .objects import FiberFunction
-                    if isinstance(func, FiberFunction):
-                        # Use a new env or current? For now, global
-                        try:
-                            self.exec_block(func.body, func.env)
-                        except Exception as e:
-                            print(f"GUI Callback Error: {e}")
-                    else:
-                        func()
+                from .objects import FiberFunction
+                if isinstance(func, FiberFunction):
+                    try: self.exec_block(func.body, func.env)
+                    except Exception as e: print(f"GUI Callback Error: {e}")
+                elif callable(func): func()
             btn = tk.Button(self.gui_root, text=text, command=cmd)
             btn.pack()
             return btn
-            
+
+        def gui_entry():
+            if not self.gui_root: return
+            ent = tk.Entry(self.gui_root)
+            ent.pack()
+            return ent
+
+        def gui_frame():
+            if not self.gui_root: return
+            frm = tk.Frame(self.gui_root)
+            frm.pack()
+            return frm
+
+        def gui_text():
+            if not self.gui_root: return
+            txt = tk.Text(self.gui_root)
+            txt.pack()
+            return txt
+
+        def gui_set_grid(widget, r, c):
+            if not widget: return
+            widget.pack_forget() # Remove from pack if it was there
+            widget.grid(row=r, column=c)
+
+        def gui_set_pack(widget, side="top"):
+            if not widget: return
+            widget.grid_forget() # Remove from grid if it was there
+            widget.pack(side=side)
+
+        def gui_get_val(widget):
+            if hasattr(widget, "get"):
+                if isinstance(widget, tk.Text): return widget.get("1.0", tk.END)
+                return widget.get()
+            return None
+
         def gui_loop():
             if self.gui_root:
                 self.gui_root.mainloop()
@@ -316,6 +355,12 @@ class Interpreter:
         self.global_env.set_local("gui_init", gui_init)
         self.global_env.set_local("gui_label", gui_label)
         self.global_env.set_local("gui_button", gui_button)
+        self.global_env.set_local("gui_entry", gui_entry)
+        self.global_env.set_local("gui_frame", gui_frame)
+        self.global_env.set_local("gui_text", gui_text)
+        self.global_env.set_local("gui_grid", gui_set_grid)
+        self.global_env.set_local("gui_pack", gui_set_pack)
+        self.global_env.set_local("gui_get", gui_get_val)
         self.global_env.set_local("gui_loop", gui_loop)
         self.global_env.set_local("gui_alert", gui_alert)
 
@@ -631,7 +676,7 @@ class Interpreter:
             methods = {}
             for m in node.body:
                 if isinstance(m, Method):
-                    methods[m.name] = FiberFunction(m.name, m.params, m.body, env)
+                    methods[m.name] = FiberFunction(m.name, m.params, m.body, env, m.defaults)
             parent = None
             if node.parent:
                 try:
@@ -646,7 +691,7 @@ class Interpreter:
 
         # FuncDef
         if isinstance(node, FuncDef):
-            fn = FiberFunction(node.name, node.params, node.body, env)
+            fn = FiberFunction(node.name, node.params, node.body, env, node.defaults)
             env.set_local(node.name, fn)
             return fn
 
@@ -857,6 +902,14 @@ class Interpreter:
                 return -float(v) if isinstance(v, (int, float, str)) else -v
             if node.op == "NOT":
                 return not bool(v)
+            if node.op == "TILDE":
+                raw_v = v.expr if isinstance(v, FiberSymbolic) else (v.data if isinstance(v, FiberTensor) else v)
+                res = ~raw_v
+                if isinstance(res, torch.Tensor): 
+                    return FiberTensor(res, requires_grad=v.data.requires_grad)
+                if isinstance(res, sp.Basic):
+                    return FiberSymbolic(res)
+                return res
 
         if isinstance(node, BinOp):
             if node.op == "AND":
@@ -885,6 +938,10 @@ class Interpreter:
                 elif node.op == "MUL": res = raw_l * raw_r
                 elif node.op == "DIV": res = raw_l / raw_r
                 elif node.op == "POWER": res = raw_l ** raw_r
+                elif node.op == "AMP": res = raw_l & raw_r
+                elif node.op == "PIPE": res = raw_l | raw_r
+                elif node.op == "CARET": res = raw_l ^ raw_r
+                elif node.op == "IMPLIES": res = raw_l >> raw_r
                 
                 if res is not None:
                     if isinstance(res, torch.Tensor):
@@ -922,6 +979,14 @@ class Interpreter:
                 return l ** r
             if node.op == "MOD":
                 return l % r
+            if node.op == "AMP":
+                return l & r
+            if node.op == "PIPE":
+                return l | r
+            if node.op == "CARET":
+                return l ^ r
+            if node.op == "IMPLIES":
+                return l >> r
             if node.op == "EQ":
                 return l == r
             if node.op == "NEQ":
@@ -977,36 +1042,14 @@ class Interpreter:
             return res
 
         if isinstance(node, Call):
+            # Special case for method calls on instances to handle 'this'
             callee = node.callee
-            if isinstance(callee, VarRef):
-                try:
-                    fn = env.get(callee.name)
-                except KeyError:
-                    try:
-                        fn = self.global_env.get(callee.name)
-                    except Exception:
-                        raise FiberRuntimeError("Not callable")
-                args = [self.eval_expr(a, env) for a in node.args]
-                if isinstance(fn, FiberClass):
-                    inst = FiberInstance(fn)
-                    inst._interpreter = self
-                    init_m = fn.find_method("init")
-                    if init_m:
-                        init_m.call(self, args, this=inst)
-                    return inst
-                if isinstance(fn, FiberStruct):
-                    return fn(*args)
-                if isinstance(fn, FiberFunction):
-                    return fn.call(self, args)
-                if callable(fn):
-                    return fn(*args)
-                raise FiberRuntimeError("Not callable")
+            args = [self.eval_expr(a, env) for a in node.args]
 
             if isinstance(callee, MemberAccess):
                 target = self.eval_expr(callee.obj, env)
                 name = callee.name
-                args = [self.eval_expr(a, env) for a in node.args]
-
+                
                 if isinstance(target, FiberInstance):
                     method = target.klass.find_method(name)
                     if method:
@@ -1017,18 +1060,40 @@ class Interpreter:
 
                 if isinstance(target, dict):
                     member = target.get(name)
+                    if isinstance(member, FiberClass):
+                        inst = FiberInstance(member)
+                        inst._interpreter = self
+                        init_m = member.find_method("init")
+                        if init_m: init_m.call(self, args, this=inst)
+                        return inst
                     if isinstance(member, FiberFunction):
                         return member.call(self, args)
                     if callable(member):
                         return member(*args)
                     raise FiberNameError(f"Member {name} not callable on dict")
 
-                # ✅ Native runtime object (DSA, Tensors, Optimizers)
+                # Native object methods
                 attr = getattr(target, name, None)
                 if callable(attr):
                     return attr(*args)
+                raise FiberRuntimeError(f"Attribute {name} not callable on {type(target).__name__}")
+            
+            # Normal variable or expression call
+            fn = self.eval_expr(callee, env)
+            if isinstance(fn, FiberClass):
+                inst = FiberInstance(fn)
+                inst._interpreter = self
+                init_m = fn.find_method("init")
+                if init_m: init_m.call(self, args, this=inst)
+                return inst
+            if isinstance(fn, FiberStruct):
+                return fn(*args)
+            if isinstance(fn, FiberFunction):
+                return fn.call(self, args)
+            if callable(fn):
+                return fn(*args)
+            raise FiberRuntimeError("Target is not callable")
 
-                raise FiberRuntimeError("Member call on unsupported object")
 
         if isinstance(node, MemberAccess):
             obj = self.eval_expr(node.obj, env)

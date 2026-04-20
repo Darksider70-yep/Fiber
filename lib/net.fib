@@ -1,4 +1,5 @@
 # 🌐 Fiber Network Library
+# Supports synchronous HTTP requests and Client sessions
 
 def get(url, headers) {
     return http_req("get", url, None, headers)
@@ -13,10 +14,31 @@ def fetch_json(url) {
     return res["json"]
 }
 
-# --- Utilities ---
+class Client {
+    def init(base_url, headers={}) {
+        this.base_url = base_url
+        this.headers = headers
+    }
 
-def encode(s) { return url_encode(s) }
-def decode(s) { return url_decode(s) }
+    def get(path) {
+        return http_req("get", this.base_url + path, None, this.headers)
+    }
+
+    def post(path, data) {
+        return http_req("post", this.base_url + path, data, this.headers)
+    }
+
+    def get_json(path) {
+        var res = this.get(path)
+        return res["json"]
+    }
+}
+
+def create_client(base_url) {
+    return Client(base_url)
+}
+
+# --- Utilities ---
 
 def download(url, dest) {
     var res = get(url, None)
