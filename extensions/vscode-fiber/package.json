@@ -88,6 +88,11 @@
                 "label": "Fiber Branded Dark",
                 "uiTheme": "vs-dark",
                 "path": "./themes/fiber-dark.json"
+            },
+            {
+                "label": "Fiber Emerald",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-emerald.json"
             }
         ],
         "configuration": {

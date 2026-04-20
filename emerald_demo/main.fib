@@ -1,0 +1,7 @@
+# emerald_demo - Fiber Emerald Project
+
+def main() {
+    print("Hello from Fiber Emerald!")
+}
+
+main()

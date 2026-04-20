@@ -1,0 +1,15 @@
+# 🧠 Fiber LLM Library (Emerald Edition)
+# Powered by Google Gemini
+
+def prompt(text) {
+    # Uses GEMINI_API_KEY from environment
+    return llm_prompt_native(text)
+}
+
+def prompt_with_key(text, key) {
+    return llm_prompt_native(text, key)
+}
+
+def chat(text, system_instruction) {
+    return llm_prompt_native(text, None, system_instruction)
+}

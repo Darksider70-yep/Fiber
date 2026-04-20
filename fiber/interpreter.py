@@ -25,7 +25,7 @@ class Interpreter:
         self.global_env = Environment()
         self.module_cache = {}
         self.exec_dir_stack = [os.getcwd()]
-        self.version = "3.0.0-gold"
+        self.version = "4.0.0-emerald"
         
         # -----------------------------
         # Core & Versioning
@@ -41,6 +41,18 @@ class Interpreter:
         self.global_env.set_local('append', lambda arr, val: (arr.append(val), arr)[1])
         self.global_env.set_local('range', lambda start, end=None, step=None: list(range(int(start), int(end) if end is not None else int(start), int(step) if step is not None else 1)) if end is not None else list(range(int(start))))
         self.global_env.set_local('write_raw', lambda x: sys.stdout.write(str(x)) or sys.stdout.flush())
+
+        def fiber_help(obj=None):
+            if obj is None:
+                print(f"🌿 Fiber v{self.version} Help")
+                print("Available Globals:")
+                keys = sorted([k for k in self.global_env.keys() if not k.startswith('_')])
+                for i in range(0, len(keys), 4):
+                    print("  ".join(f"{k:<15}" for k in keys[i:i+4]))
+                print("\nUse help(name) for specific details (experimental).")
+            else:
+                print(f"Help for {obj}: {type(obj).__name__}")
+        self.global_env.set_local('help', fiber_help)
 
         # -----------------------------
         # Native Data Structures (DSA)
@@ -253,6 +265,108 @@ class Interpreter:
         self.global_env.set_local("fs_is_file", lambda p: os.path.isfile(p))
         self.global_env.set_local("os_path_join", lambda *args: os.path.join(*args))
         self.global_env.set_local("os_path_split", lambda p: os.path.split(p))
+
+        # -----------------------------
+        # GUI Support (Tkinter)
+        # -----------------------------
+        import tkinter as tk
+        from tkinter import messagebox
+        
+        self.gui_root = None
+        
+        def gui_init(title="Fiber Window", w=400, h=300):
+            self.gui_root = tk.Tk()
+            self.gui_root.title(title)
+            self.gui_root.geometry(f"{w}x{h}")
+            return self.gui_root
+        
+        def gui_label(text):
+            if not self.gui_root: return
+            lbl = tk.Label(self.gui_root, text=text)
+            lbl.pack()
+            return lbl
+            
+        def gui_button(text, func):
+            if not self.gui_root: return
+            # Wrap function call
+            def cmd():
+                if callable(func):
+                    # We might need to run this in Fiber context
+                    # For simplicity, we just call it if it's a Fiber function
+                    from .objects import FiberFunction
+                    if isinstance(func, FiberFunction):
+                        # Use a new env or current? For now, global
+                        try:
+                            self.exec_block(func.body, func.env)
+                        except Exception as e:
+                            print(f"GUI Callback Error: {e}")
+                    else:
+                        func()
+            btn = tk.Button(self.gui_root, text=text, command=cmd)
+            btn.pack()
+            return btn
+            
+        def gui_loop():
+            if self.gui_root:
+                self.gui_root.mainloop()
+                
+        def gui_alert(title, msg):
+            messagebox.showinfo(title, msg)
+
+        self.global_env.set_local("gui_init", gui_init)
+        self.global_env.set_local("gui_label", gui_label)
+        self.global_env.set_local("gui_button", gui_button)
+        self.global_env.set_local("gui_loop", gui_loop)
+        self.global_env.set_local("gui_alert", gui_alert)
+
+        # -----------------------------
+        # LLM Support (Gemini)
+        # -----------------------------
+        def llm_prompt(prompt, api_key=None, system=None):
+            if api_key is None:
+                api_key = os.getenv("GEMINI_API_KEY")
+            if not api_key:
+                return "Error: No GEMINI_API_KEY found in environment."
+            
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}]
+            }
+            if system:
+                payload["system_instruction"] = {"parts": [{"text": system}]}
+                
+            try:
+                res = requests.post(url, json=payload, timeout=30)
+                data = res.json()
+                if "candidates" in data:
+                    return data["candidates"][0]["content"]["parts"][0]["text"]
+                return f"Error: {data}"
+            except Exception as e:
+                return f"Request Error: {e}"
+
+        self.global_env.set_local("llm_prompt_native", llm_prompt)
+
+        # -----------------------------
+        # Threading Support
+        # -----------------------------
+        import threading
+        def thread_start(func, args=[]):
+            def wrapper():
+                from .objects import FiberFunction
+                if isinstance(func, FiberFunction):
+                    # Create call env
+                    call_env = Environment(func.env)
+                    for i, param in enumerate(func.params):
+                        if i < len(args):
+                            call_env.set_local(param, args[i])
+                    self.exec_block(func.body, call_env)
+                else:
+                    func(*args)
+            t = threading.Thread(target=wrapper, daemon=True)
+            t.start()
+            return t
+            
+        self.global_env.set_local("thread_run", thread_start)
 
         # -----------------------------
         # URL & Security

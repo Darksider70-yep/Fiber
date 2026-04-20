@@ -2,13 +2,13 @@
 
 **Fiber** is a next-generation programming language designed to bridge the gap between high-level symbolic logic and low-level numerical computation. It provides a first-class developer experience for AI researchers, data scientists, and systems engineers.
 
-> **Status**: v1.0.0 "Official Launch" 🌿 🚀
+> **Status**: v4.0.0 "Emerald" 🌿💎
 
 ---
 
 ## ⚡ Key Features
 *   **🧩 Native Neuro-Symbolic Logic**: Blend algebraic symbols (SymPy-backed) with differentiable tensors (PyTorch-backed) in the same line of code.
-*   **🏗️ Bytecode Compiler & Builder**: v3.0 now supports pre-compiling scripts to binary bytecode (`.fibc`) and building zero-dependency standalone EXEs.
+*   **🏗️ Bytecode Compiler & Builder**: v4.0 supports pre-compiling scripts to binary bytecode (`.fibc`) and building zero-dependency standalone EXEs.
 *   **📦 Standalone Distribution**: Generate true, portable binaries that don't require Python or Fiber on the target machine.
 *   **🔋 Batteries-Included**: A comprehensive standard library covering everything from SQL and DataFrames to Modular Neural Layers.
 *   **🧹 Automatic Differentiation**: Built-in autograd engine for training complex neural architectures.

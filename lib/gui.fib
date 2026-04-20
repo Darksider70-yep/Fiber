@@ -1,0 +1,28 @@
+# 🎨 Fiber GUI Library (Emerald Edition)
+# Wraps native Tkinter builtins
+
+class Window {
+    def init(title, width, height) {
+        this.raw = gui_init(title, width, height)
+    }
+
+    def label(text) {
+        return gui_label(text)
+    }
+
+    def button(text, callback) {
+        return gui_button(text, callback)
+    }
+
+    def show() {
+        gui_loop()
+    }
+    
+    def alert(title, msg) {
+        gui_alert(title, msg)
+    }
+}
+
+def create_window(title, w, h) {
+    return Window(title, w, h)
+}

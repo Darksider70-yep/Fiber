@@ -1,0 +1,15 @@
+# 🧵 Fiber Threading Library (Emerald Edition)
+# Basic concurrent execution support
+
+def spawn(func, args) {
+    # Returns a native thread object
+    return thread_run(func, args)
+}
+
+def parallel(func_list, args_list) {
+    var threads = []
+    for i = 0 to (len(func_list) - 1) {
+        append(threads, thread_run(func_list[i], args_list[i]))
+    }
+    return threads
+}

@@ -71,25 +71,108 @@ def run_file(filename, compile_only=False):
         sys.exit(1)
 
 
+def init_project(name):
+    print(f"Fiber: Initializing Emerald Project: {name}")
+    if os.path.exists(name):
+        print(f"Error: Directory '{name}' already exists.")
+        sys.exit(1)
+    
+    os.makedirs(name)
+    os.makedirs(os.path.join(name, "lib"))
+    
+    main_content = f"""# {name} - Fiber Emerald Project
+
+def main() {{
+    print("Hello from Fiber Emerald!")
+}}
+
+main()
+"""
+    with open(os.path.join(name, "main.fib"), "w") as f:
+        f.write(main_content)
+    
+    print(f"OK: Project '{name}' created successfully.")
+    print(f"Usage: fiber run {name}")
+
+def doctor():
+    print("Fiber Emerald Doctor - Diagnostic Report")
+    print("-" * 40)
+    
+    deps = [
+        ("torch", "Neural Engine"),
+        ("sympy", "Symbolic Engine"),
+        ("requests", "Networking"),
+        ("pyreadline3", "REPL History (Windows)"),
+    ]
+    
+    for module, feature in deps:
+        try:
+            mod = __import__(module)
+            ver = getattr(mod, "__version__", "unknown")
+            print(f"[OK] {module:<12} | {feature:<20} | v{ver}")
+        except ImportError:
+            status = "[MISSING]" if module != "pyreadline3" else "[OPTIONAL]"
+            print(f"{status} {module:<12} | {feature:<20}")
+    
+    print("-" * 40)
+    print(f"Fiber Version: 4.0.0-emerald")
+    print("Report Complete.")
+
+def run_project(path):
+    if os.path.isfile(path):
+        run_file(path)
+    elif os.path.isdir(path):
+        candidates = ["main.fib", "index.fib", "app.fib"]
+        for c in candidates:
+            cpath = os.path.join(path, c)
+            if os.path.isfile(cpath):
+                run_file(cpath)
+                return
+        print(f"Error: No entry point (main.fib, index.fib) found in '{path}'")
+        sys.exit(1)
+    else:
+        print(f"Error: Path '{path}' not found.")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         args = sys.argv[1:]
-        if "-c" in args or "--compile" in args:
+        
+        # 1. COMMANDS
+        cmd = args[0]
+        
+        if cmd == "init":
+            if len(args) < 2:
+                print("Error: Missing project name. Usage: fiber init <name>")
+                sys.exit(1)
+            init_project(args[1])
+        elif cmd == "doctor":
+            doctor()
+        elif cmd == "run":
+            if len(args) < 2:
+                print("Error: Missing path. Usage: fiber run <path>")
+                sys.exit(1)
+            run_project(args[1])
+        elif cmd in ["-c", "--compile"]:
             cli_filename = next((a for a in args if not a.startswith("-")), None)
             if not cli_filename:
                 print("Error: Missing filename for compilation.")
                 sys.exit(1)
             run_file(cli_filename, compile_only=True)
-        elif "-b" in args or "--build" in args:
+        elif cmd in ["-b", "--build"]:
             cli_filename = next((a for a in args if not a.startswith("-")), None)
             if not cli_filename:
                 print("Error: Missing filename for build.")
                 sys.exit(1)
             from fiber import builder
             builder.run_build(cli_filename)
+        elif cmd in ["-v", "--version"]:
+            print("Fiber v4.0.0-emerald")
         else:
-            run_file(sys.argv[1])
+            # Default to running the file provided
+            run_project(sys.argv[1])
     else:
-        print("Starting Fiber v2.0 REPL...")
-        print('Tip: type "exit" to quit\n')
+        print("Starting Fiber v4.0 (Emerald) REPL...")
+        print('Tip: type "exit" or ".help" for assistance\n')
         repl.start_repl()
