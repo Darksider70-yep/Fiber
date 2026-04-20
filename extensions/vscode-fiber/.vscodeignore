@@ -1,0 +1,20 @@
+.vscode/**
+.git/**
+.gitignore
+.vscodeignore
+**/*.map
+node_modules/**
+vsc-extension-quickstart.md
+Icon.png
+# Keep only necessary runtime files
+!package.json
+!src/**
+!themes/**
+!syntaxes/**
+!snippets/**
+!language-configuration.json
+!icon.png
+!README.md
+!CHANGELOG.md
+!LICENSE
+!LICENSE.txt

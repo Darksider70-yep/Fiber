@@ -25,7 +25,7 @@ class Interpreter:
         self.global_env = Environment()
         self.module_cache = {}
         self.exec_dir_stack = [os.getcwd()]
-        self.version = "2.0.0"
+        self.version = "3.0.0-gold"
         
         # -----------------------------
         # Core & Versioning

@@ -8,6 +8,8 @@ venv/
 # Fiber Build Artifacts
 build/
 dist/
+build_fiber/
+*.fibc
 *.spec
 
 # Local Data

@@ -8,7 +8,8 @@
 
 ## ⚡ Key Features
 *   **🧩 Native Neuro-Symbolic Logic**: Blend algebraic symbols (SymPy-backed) with differentiable tensors (PyTorch-backed) in the same line of code.
-*   **📦 Standalone Executable**: Distributed as a single, portable `fiber.exe`. No dependency on a local Python installation.
+*   **🏗️ Bytecode Compiler & Builder**: v3.0 now supports pre-compiling scripts to binary bytecode (`.fibc`) and building zero-dependency standalone EXEs.
+*   **📦 Standalone Distribution**: Generate true, portable binaries that don't require Python or Fiber on the target machine.
 *   **🔋 Batteries-Included**: A comprehensive standard library covering everything from SQL and DataFrames to Modular Neural Layers.
 *   **🧹 Automatic Differentiation**: Built-in autograd engine for training complex neural architectures.
 

@@ -4,11 +4,13 @@ Official Visual Studio Code extension for the **Fiber** programming language. Fi
 
 ## 🚀 Features
 
-- **🌈 Gold-Standard Syntax Highlighting**: Precisely colorized keywords, operators, and Fiber-specific types (`tensor`, `expr`).
-- **🧠 Expert Snipets**:
+- **🌈 Gold-Standard Syntax Highlighting**: Precisely colorized keywords, operators, and Fiber-specific types (`tensor`, `expr`, `struct`, `enum`, `match`).
+- **🏗️ One-Click Standalone Build**: Right-click any Fiber file to compile it into a production-ready Windows `.exe` instantly.
+- **🛡️ Bytecode Integration**: Native support for Fiber Compiled Bytecode (`.fibc`) visualization and distribution.
+- **🧠 Expert Snippets**:
   - `fneural`: Instantly scaffold a modular Sequential neural network.
   - `fexpr`: Create and differentiate symbolic expressions.
-  - `fclass`: Professional class boilerplate.
+  - `fmatch`: Professional pattern-matching boilerplate.
 - **🌑 Fiber Branded Dark Theme**: A premium, custom-designed dark theme optimized for neuro-symbolic development.
 - **⚙️ Integrated Language Support**: Auto-bracket matching, indentation rules, and intelligent comment toggling.
 

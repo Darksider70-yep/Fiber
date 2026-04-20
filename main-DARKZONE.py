@@ -80,6 +80,13 @@ if __name__ == "__main__":
                 print("Error: Missing filename for compilation.")
                 sys.exit(1)
             run_file(cli_filename, compile_only=True)
+        elif "-b" in args or "--build" in args:
+            cli_filename = next((a for a in args if not a.startswith("-")), None)
+            if not cli_filename:
+                print("Error: Missing filename for build.")
+                sys.exit(1)
+            from fiber import builder
+            builder.run_build(cli_filename)
         else:
             run_file(sys.argv[1])
     else:
