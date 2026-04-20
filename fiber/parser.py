@@ -154,6 +154,10 @@ class Parser:
 
             raise FiberSyntaxError(f"Invalid for-loop syntax at line {t.line}")
 
+        # ---------------- MATCH / SWITCH ----------------
+        if t.type in ("MATCH", "SWITCH"):
+            return self.match_stmt()
+
         # ---------------- TRY / THROW / ASSERT ----------------
         if t.type == "TRY":
             return self.try_stmt()
@@ -285,6 +289,40 @@ class Parser:
         name = self.eat("NAME").value
         return EnumDef(name, self.name_list_block())
 
+    def match_stmt(self):
+        if self.current().type == "SWITCH":
+            self.eat("SWITCH")
+        else:
+            self.eat("MATCH")
+        discriminant = self.expr()
+        self.skip_newlines()
+        self.eat("LBRACE")
+        cases = []
+        default_branch = None
+        while self.current().type != "RBRACE":
+            self.skip_newlines()
+            if self.current().type == "RBRACE":
+                break
+
+            if self.current().type == "CASE":
+                self.eat("CASE")
+                pattern = self.expr()
+                self.eat("COLON")
+                self.skip_newlines()
+                body = self.block() if self.current().type == "LBRACE" else [self.statement()]
+                cases.append(Case(pattern, body))
+            elif self.current().type == "DEFAULT":
+                self.eat("DEFAULT")
+                self.eat("COLON")
+                self.skip_newlines()
+                default_branch = self.block() if self.current().type == "LBRACE" else [self.statement()]
+            else:
+                raise FiberSyntaxError(f"Expected case or default in match block, got {self.current().type} at line {self.current().line}")
+            self.skip_newlines()
+        
+        self.eat("RBRACE")
+        return Match(discriminant, cases, default_branch)
+
     def if_stmt(self):
         self.eat("IF")
         cond = self.expr()
@@ -355,7 +393,17 @@ class Parser:
     # EXPRESSIONS
     # -------------------------------------------------
     def expr(self):
-        return self.or_expr()
+        return self.ternary()
+
+    def ternary(self):
+        node = self.or_expr()
+        if self.current().type == "QUESTION":
+            self.eat("QUESTION")
+            true_expr = self.expr()
+            self.eat("COLON")
+            false_expr = self.ternary()
+            return Ternary(node, true_expr, false_expr)
+        return node
 
     def or_expr(self):
         node = self.and_expr()
@@ -477,16 +525,31 @@ class Parser:
         if t.type == "LBRACKET":
             self.eat("LBRACKET")
             self.skip_newlines()
-            elems = []
-            if self.current().type != "RBRACKET":
-                while True:
-                    elems.append(self.expr())
-                    self.skip_newlines()
-                    if self.current().type == "COMMA":
-                        self.eat("COMMA")
-                        self.skip_newlines()
-                        continue
-                    break
+            if self.current().type == "RBRACKET":
+                self.eat("RBRACKET")
+                return ListLiteral([])
+
+            first = self.expr()
+            if self.current().type == "FOR":
+                self.eat("FOR")
+                var = self.eat("NAME").value
+                self.eat("IN")
+                iterable = self.expr()
+                cond = None
+                if self.current().type == "IF":
+                    self.eat("IF")
+                    cond = self.expr()
+                self.eat("RBRACKET")
+                return ListComprehension(first, var, iterable, cond)
+
+            elems = [first]
+            self.skip_newlines()
+            while self.current().type == "COMMA":
+                self.eat("COMMA")
+                self.skip_newlines()
+                if self.current().type == "RBRACKET": break
+                elems.append(self.expr())
+                self.skip_newlines()
             self.eat("RBRACKET")
             return ListLiteral(elems)
 

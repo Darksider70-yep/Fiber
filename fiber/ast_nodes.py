@@ -140,9 +140,33 @@ class ListLiteral(Node):
     def __init__(self, elements):
         self.elements = elements
 
+class ListComprehension(Node):
+    def __init__(self, expr, var, iterable, condition=None):
+        self.expr = expr
+        self.var = var
+        self.iterable = iterable
+        self.condition = condition
+
 class DictLiteral(Node):
     def __init__(self, pairs):
         self.pairs = pairs
+
+class Ternary(Node):
+    def __init__(self, cond, true_expr, false_expr):
+        self.cond = cond
+        self.true_expr = true_expr
+        self.false_expr = false_expr
+
+class Match(Node):
+    def __init__(self, expr, cases, default_branch=None):
+        self.expr = expr
+        self.cases = cases
+        self.default_branch = default_branch
+
+class Case(Node):
+    def __init__(self, pattern, body):
+        self.pattern = pattern
+        self.body = body
 
 class StructDef(Node):
     def __init__(self, name, fields):

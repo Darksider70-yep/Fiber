@@ -1,0 +1,37 @@
+# Fiber v2.0 Phase 2 Verification: Logical Sugaring & Flow Control
+
+# 1. Ternary Operator
+var x = 10
+var status = (x > 5) ? "Greater" : "Smaller"
+print "Ternary test (10 > 5): " + status
+
+var y = 3
+var status2 = (y > 5) ? "Greater" : "Smaller"
+print "Ternary test (3 > 5): " + status2
+
+# 2. Match Statement
+enum Mode { TRAIN, EVAL, TEST }
+var currentMode = Mode.EVAL
+
+print "Match test starting..."
+match currentMode {
+    case Mode.TRAIN:
+        print "Mode is TRAIN"
+    case Mode.EVAL:
+        print "Mode is EVAL"
+    case Mode.TEST:
+        print "Mode is TEST"
+    default:
+        print "Unknown Mode"
+}
+
+# 3. List Comprehensions
+var numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# Simple square
+var squares = [ n * n for n in numbers ]
+print "Squares: " + str(squares)
+
+# With filter (even only)
+var even_squares = [ n * n for n in numbers if n % 2 == 0 ]
+print "Even squares: " + str(even_squares)

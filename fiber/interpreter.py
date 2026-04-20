@@ -24,7 +24,7 @@ class Interpreter:
         self.global_env = Environment()
         self.module_cache = {}
         self.exec_dir_stack = [os.getcwd()]
-        self.version = "1.0.0"
+        self.version = "2.0.0"
         
         # -----------------------------
         # Core & Versioning
@@ -669,6 +669,17 @@ class Interpreter:
                     continue
             return None
 
+        # Match (Switch)
+        if isinstance(node, Match):
+            val = self.eval_expr(node.expr, env)
+            for c in node.cases:
+                p_val = self.eval_expr(c.pattern, env)
+                if val == p_val:
+                    return self.exec_block(c.body, Environment(env))
+            if node.default_branch:
+                return self.exec_block(node.default_branch, Environment(env))
+            return None
+
         # Break/Continue
         if isinstance(node, Break):
             raise BreakSignal()
@@ -791,8 +802,27 @@ class Interpreter:
             if node.op == "GTE":
                 return l >= r
 
+        if isinstance(node, Ternary):
+            cond = bool(self.eval_expr(node.cond, env))
+            if cond:
+                return self.eval_expr(node.true_expr, env)
+            else:
+                return self.eval_expr(node.false_expr, env)
+
         if isinstance(node, ListLiteral):
             return [self.eval_expr(e, env) for e in node.elements]
+
+        if isinstance(node, ListComprehension):
+            iterable = self.eval_expr(node.iterable, env)
+            results = []
+            comp_env = Environment(env)
+            for item in iterable:
+                comp_env.set_local(node.var, item)
+                if node.condition:
+                    if not bool(self.eval_expr(node.condition, comp_env)):
+                        continue
+                results.append(self.eval_expr(node.expr, comp_env))
+            return results
 
         if isinstance(node, DictLiteral):
             return {self.eval_expr(k, env): self.eval_expr(v, env) for k, v in node.pairs}

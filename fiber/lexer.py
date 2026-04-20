@@ -29,6 +29,7 @@ TOKEN_SPEC = [
     ("COLON", r":"),
     ("SEMICOLON", r";"),
     ("DOT", r"\."),
+    ("QUESTION", r"\?"),
 
     # Math
     ("PLUS", r"\+"),
@@ -47,7 +48,7 @@ TOKEN_SPEC = [
 
 KEYWORDS = {
     "var", "const", "static", "final", "def", "class",
-    "struct", "enum", "print", "return", "extends",
+    "struct", "enum", "switch", "match", "case", "default", "print", "return", "extends",
     "if", "elif", "else", "while", "for", "in", "to", "step",
     "and", "or", "not", "true", "false",
     "break", "continue", "pass",
