@@ -111,6 +111,24 @@ class Interpreter:
         self.global_env.set_local("os_sleep", lambda ms: time.sleep(ms / 1000.0))
         self.global_env.set_local("time_now", lambda: time.time())
         
+        # Compiler Support
+        def lib_compile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    source = f.read()
+                tokens = tokenize(source)
+                p = Parser(tokens, filename=path)
+                ast = p.parse()
+                binary = compiler.compile_to_binary(ast)
+                out_name = os.path.splitext(path)[0] + ".fibc"
+                with open(out_name, "wb") as f:
+                    f.write(binary)
+                return out_name
+            except Exception as e:
+                raise FiberRuntimeError(f"Compilation failed: {e}")
+        
+        self.global_env.set_local("sys_compile", lib_compile)
+        
         # JSON Support
         self.global_env.set_local("json_parse", lambda s: json.loads(s))
         self.global_env.set_local("json_str", lambda o: json.dumps(o, indent=4))

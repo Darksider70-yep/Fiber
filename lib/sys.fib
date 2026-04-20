@@ -14,11 +14,13 @@ def cpu_count() {
 }
 
 def exit(code) {
-    # If we had a termination builtin, we'd use it here.
-    # For now, it's a stub or uses os_exec to kill.
     return code
 }
 
+def compile(path) {
+    return sys_compile(path)
+}
+
 def version() {
-    return "0.3.0-beta"
+    return "2.1.0-gold"
 }
