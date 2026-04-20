@@ -15,10 +15,23 @@ Official Visual Studio Code extension for the **Fiber** programming language. Fi
 - **⚙️ Integrated Language Support**: Auto-bracket matching, indentation rules, and intelligent comment toggling.
 
 ## 🛠️ Getting Started
+ 
+1. **Download Fiber**: Get the latest `fiber.exe` from the [Official Releases](https://github.com/Darksider70-yep/Fiber/releases).
+2. **Install Extension**: Search for **Fiber** in the Marketplace and click Install.
+3. **Configure Path**: 
+   - Open VS Code Settings (`Ctrl+,`).
+   - Search for `Fiber Path`.
+   - Paste the path to your `fiber.exe` (e.g., `C:\Tools\fiber.exe`).
+4. **Select Theme**: Open any `.fib` file and switch to the official theme: **Ctrl+K, Ctrl+T** -> **Fiber Branded Dark**.
 
-1. Install this extension from the Marketplace.
-2. Open any `.fib` file.
-3. Switch to the official theme: **Ctrl+K, Ctrl+T** -> **Fiber Branded Dark**.
+## 🏗️ Running Code
+- **Option 1 (Built-in)**: Right-click any `.fib` file in the explorer and select **"Build to Executable (EXE)"**.
+- **Option 2 (Code Runner)**: If you have the *Code Runner* extension, add the following to your `settings.json` for 1-click execution:
+```json
+"code-runner.executorMap": {
+    "fiber": "cd $dir && fiber $fileName"
+}
+```
 
 ## 🧩 Fiber at a Glance
 
