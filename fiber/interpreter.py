@@ -10,6 +10,7 @@ import torch
 from .lexer import tokenize
 from .parser import Parser
 from .dsa import FiberStack, FiberQueue, FiberSet
+from . import compiler
 import codecs
 
 
