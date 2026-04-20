@@ -1,5 +1,5 @@
 from .ast_nodes import *
-from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal, FiberSymbolic, FiberTensor, FiberOptimizer
+from .objects import FiberClass, FiberInstance, FiberFunction, ReturnSignal, FiberSymbolic, FiberTensor, FiberOptimizer, FiberStruct, FiberStructInstance, FiberEnum
 from .ai import AIBridge
 from .environment import Environment
 from .errors import FiberNameError, FiberRuntimeError
@@ -517,6 +517,18 @@ class Interpreter:
             env.set_local(node.name, fn)
             return fn
 
+        # StructDef
+        if isinstance(node, StructDef):
+            sd = FiberStruct(node.name, node.fields)
+            env.set_local(node.name, sd)
+            return sd
+
+        # EnumDef
+        if isinstance(node, EnumDef):
+            ed = FiberEnum(node.name, node.values)
+            env.set_local(node.name, ed)
+            return ed
+
         # Return
         if isinstance(node, Return):
             val = self.eval_expr(node.expr, env) if node.expr else None
@@ -819,6 +831,8 @@ class Interpreter:
                     if init_m:
                         init_m.call(self, args, this=inst)
                     return inst
+                if isinstance(fn, FiberStruct):
+                    return fn(*args)
                 if isinstance(fn, FiberFunction):
                     return fn.call(self, args)
                 if callable(fn):
@@ -864,6 +878,19 @@ class Interpreter:
                         return m.call(self, list(args), this=obj)
                     return bound
                 raise FiberNameError(f"{node.name} not found on instance")
+
+            if isinstance(obj, FiberStructInstance):
+                try:
+                    return obj.get(node.name)
+                except KeyError:
+                    raise FiberNameError(f"Field {node.name} not found in struct {obj._struct.name}")
+
+            if isinstance(obj, FiberEnum):
+                try:
+                    return obj.get(node.name)
+                except KeyError:
+                    raise FiberNameError(f"Value {node.name} not found in enum {obj.name}")
+
             if isinstance(obj, dict):
                 if node.name in obj:
                     return obj[node.name]

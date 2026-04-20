@@ -126,3 +126,46 @@ class FiberOptimizer:
 
     def __repr__(self):
         return f'<Optimizer type={type(self.optimizer).__name__} lr={self.optimizer.param_groups[0]["lr"]}>'
+
+class FiberStruct:
+    def __init__(self, name, fields):
+        self.name = name
+        self.fields = fields
+    def __call__(self, *args):
+        data = {}
+        for i, f in enumerate(self.fields):
+            data[f] = args[i] if i < len(args) else None
+        return FiberStructInstance(self, data)
+    def __repr__(self): return f"<struct {self.name}>"
+
+class FiberStructInstance:
+    def __init__(self, struct_def, data):
+        self._struct = struct_def
+        self._data = data
+    def get(self, name):
+        if name in self._data: return self._data[name]
+        raise KeyError(name)
+    def set(self, name, value):
+        self._data[name] = value
+    def __repr__(self):
+        fields_str = ", ".join(f"{k}={v}" for k, v in self._data.items())
+        return f"{self._struct.name}({fields_str})"
+
+class FiberEnum:
+    def __init__(self, name, members):
+        self.name = name
+        self.members = {}
+        for m in members:
+            self.members[m] = FiberEnumItem(self, m)
+    def get(self, name):
+        if name in self.members: return self.members[name]
+        raise KeyError(name)
+    def __repr__(self): return f"<enum {self.name}>"
+
+class FiberEnumItem:
+    def __init__(self, enum_def, name):
+        self.enum = enum_def
+        self.name = name
+    def __eq__(self, other):
+        return isinstance(other, FiberEnumItem) and self.enum == other.enum and self.name == other.name
+    def __repr__(self): return f"{self.enum.name}.{self.name}"

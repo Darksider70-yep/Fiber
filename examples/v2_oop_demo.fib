@@ -1,0 +1,46 @@
+# Fiber v2.0 Phase 1 Verification: Advanced Logic Structures
+
+# 1. Class Inheritance
+class Animal {
+    def speak() {
+        print "Some generic sound"
+    }
+}
+
+class Dog extends Animal {
+    def speak() {
+        print "Buddy barks: Woof!"
+    }
+}
+
+class Cat extends Animal {
+    # Inherits speak() from Animal
+}
+
+var d = Dog()
+d.speak()  # Should be: Buddy barks: Woof!
+
+var c = Cat()
+c.speak()  # Should be: Some generic sound
+
+# 2. Structs (Lightweight Data)
+struct Point { x, y }
+
+var p = Point(10, 20)
+print "Point coordinates: x=" + str(p.x) + ", y=" + str(p.y)
+p.x = 100
+print "Updated x: " + str(p.x)
+
+# 3. Enums (Symbolic Constants)
+enum Color { RED, GREEN, BLUE }
+
+var myColor = Color.GREEN
+print "Selected color: " + str(myColor)
+
+if myColor == Color.GREEN {
+    print "Verification: Enum match successful!"
+}
+
+if myColor != Color.RED {
+    print "Verification: Enum inequality successful!"
+}
