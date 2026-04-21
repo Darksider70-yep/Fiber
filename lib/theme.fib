@@ -42,8 +42,8 @@ def ocean_theme() {
         "Ocean",
         terminal.BRIGHT_BLUE,
         terminal.BOLD + terminal.BRIGHT_CYAN,
-        terminal.CYAN,
-        terminal.MAGENTA,
+        terminal.GREEN,
+        terminal.YELLOW,
         terminal.RED,
         terminal.GRAY
     )
@@ -61,6 +61,30 @@ def sunset_theme() {
     )
 }
 
+def fall_theme() {
+    return Theme(
+        "Fall",
+        terminal.BRIGHT_YELLOW,
+        terminal.BOLD + terminal.YELLOW,
+        terminal.GREEN,
+        terminal.BRIGHT_RED,
+        terminal.RED,
+        terminal.GRAY
+    )
+}
+
+def astro_theme() {
+    return Theme(
+        "Astro",
+        terminal.BRIGHT_MAGENTA,
+        terminal.BOLD + terminal.BRIGHT_BLUE,
+        terminal.BRIGHT_CYAN,
+        terminal.MAGENTA,
+        terminal.BRIGHT_RED,
+        terminal.GRAY
+    )
+}
+
 # --- Theme Management ---
 
 var current = emerald_theme()
@@ -71,6 +95,16 @@ def set_theme(theme_obj) {
 
 def get_theme() {
     return current
+}
+
+def get_theme_by_name(name) {
+    var n = string_lower(str(name))
+    if (n == "emerald") return emerald_theme()
+    if (n == "ocean") return ocean_theme()
+    if (n == "sunset") return sunset_theme()
+    if (n == "fall") return fall_theme()
+    if (n == "astro") return astro_theme()
+    return emerald_theme()
 }
 
 # UI Printing Helpers

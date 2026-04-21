@@ -27,4 +27,18 @@ theme.set_theme(theme.sunset_theme())
 theme.print_header("Alert")
 theme.print_error("Breach!")
 print("")
+
+theme.print_dim("Fall...")
+theme.set_theme(theme.fall_theme())
+theme.print_header("Harvest")
+theme.print_success("Yielding results.")
+print("")
+
+theme.print_dim("Astro...")
+theme.set_theme(theme.astro_theme())
+theme.print_header("Nebula")
+theme.print_primary("Scanning deep space...")
+theme.print_warning("Radiation detected.")
+print("")
+
 print("Done")

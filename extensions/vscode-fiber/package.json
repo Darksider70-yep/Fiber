@@ -93,6 +93,26 @@
                 "label": "Fiber Emerald",
                 "uiTheme": "vs-dark",
                 "path": "./themes/fiber-emerald.json"
+            },
+            {
+                "label": "Fiber Ocean",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-ocean.json"
+            },
+            {
+                "label": "Fiber Sunset",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-sunset.json"
+            },
+            {
+                "label": "Fiber Fall",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-fall.json"
+            },
+            {
+                "label": "Fiber Astro",
+                "uiTheme": "vs-dark",
+                "path": "./themes/fiber-astro.json"
             }
         ],
         "configuration": {
