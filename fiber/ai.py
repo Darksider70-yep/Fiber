@@ -20,7 +20,9 @@ class AIBridge:
         try:
             # We use standard_transformations but NOT implicit_multiplication_application if we want (Socrates) to be args
             # Actually, standard transformations include auto_symbol which is good.
-            return sp_parse(s, local_dict=local_dict, transformations=standard_transformations)
+            # We add convert_xor to make '^' work as power operator (**)
+            transformations = standard_transformations + (convert_xor,)
+            return sp_parse(s, local_dict=local_dict, transformations=transformations)
         except Exception as e:
             raise FiberRuntimeError(f"Symbolic parsing error: {e}")
 
