@@ -142,6 +142,12 @@ class AIBridge:
         return satisfiable(expr)
 
     @staticmethod
+    def get_symbols(expr):
+        if hasattr(expr, "free_symbols"):
+            return [str(s) for s in expr.free_symbols]
+        return []
+
+    @staticmethod
     def logic_to_loss(expr, mappings, norm_type="product"):
         """
         Converts a symbolic logic expression to a differentiable Torch tensor loss.

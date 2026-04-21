@@ -73,6 +73,26 @@ class FiberSymbolic:
     def __str__(self):
         return str(self.expr)
 
+    # Operator Overloading for Symbolic Logic
+    def __and__(self, other):
+        o = other.expr if isinstance(other, FiberSymbolic) else other
+        return FiberSymbolic(sp.And(self.expr, o))
+    
+    def __or__(self, other):
+        o = other.expr if isinstance(other, FiberSymbolic) else other
+        return FiberSymbolic(sp.Or(self.expr, o))
+    
+    def __invert__(self):
+        return FiberSymbolic(sp.Not(self.expr))
+    
+    def __rshift__(self, other): # used for implies (>>)
+        o = other.expr if isinstance(other, FiberSymbolic) else other
+        return FiberSymbolic(sp.Implies(self.expr, o))
+    
+    def __eq__(self, other):
+        o = other.expr if isinstance(other, FiberSymbolic) else other
+        return FiberSymbolic(sp.Equivalent(self.expr, o))
+
 class FiberTensor:
     def __init__(self, data, requires_grad=False):
         if isinstance(data, torch.Tensor):

@@ -80,6 +80,7 @@ class Interpreter:
         self.global_env.set_local('logic_cnf', lambda e: FiberSymbolic(AIBridge.to_cnf(e.expr if isinstance(e, FiberSymbolic) else e)))
         self.global_env.set_local('logic_dnf', lambda e: FiberSymbolic(AIBridge.to_dnf(e.expr if isinstance(e, FiberSymbolic) else e)))
         self.global_env.set_local('logic_sat', lambda e: AIBridge.satisfiable(e.expr if isinstance(e, FiberSymbolic) else e))
+        self.global_env.set_local('logic_symbols', lambda e: AIBridge.get_symbols(e.expr if isinstance(e, FiberSymbolic) else e))
         self.global_env.set_local('logic_to_loss', lambda e, m, n="product": AIBridge.logic_to_loss(e.expr if isinstance(e, FiberSymbolic) else e, m, n))
 
         # -----------------------------

@@ -14,6 +14,8 @@ TOKEN_SPEC = [
     ("NEQ", r"!="),
     ("LTE", r"<="),
     ("GTE", r">="),
+    ("POWER", r"\*\*"),
+    ("IMPLIES", r">>"),
     ("LT", r"<"),
     ("GT", r">"),
     ("ASSIGN", r"="),
@@ -34,8 +36,6 @@ TOKEN_SPEC = [
     # Math
     ("PLUS", r"\+"),
     ("MINUS", r"-"),
-    ("POWER", r"\*\*"),
-    ("IMPLIES", r">>"),
     ("MUL", r"\*"),
     ("DIV", r"/"),
     ("MOD", r"%"),

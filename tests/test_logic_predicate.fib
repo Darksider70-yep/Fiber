@@ -1,0 +1,59 @@
+# 🧪 Test: Enhanced Logic & Pedicate AI
+import logic
+
+print("--- Testing Fuzzy Quantifiers ---")
+var domain = [1, 2, 3]
+# All items > 0 (Differentiable)
+# We map predicate result to a tensor
+def predicate(x) {
+    if x > 0 { return tensor(0.9) }
+    return tensor(0.1)
+}
+
+var all_true = logic.fuzzy_forall(domain, predicate)
+print("Fuzzy ForAll (Expected high): " + str(all_true))
+
+# At least one item > 2
+def predicate2(x) {
+    if x > 2 { return tensor(0.9) }
+    return tensor(0.1)
+}
+var exists_true = logic.fuzzy_exists(domain, predicate2)
+print("Fuzzy Exists (Expected high): " + str(exists_true))
+
+print("-" * 20)
+print("--- Testing Relational Reasoner (Wumpus World Toy) ---")
+
+# Grid 2x2
+var reasoner = logic.RelationalReasoner(2, 2)
+
+# Goal: If there is a Pit at (0,0), then there must be a Breeze at (0,1) and (1,0)
+# Rule: Pit(x,y) >> (Breeze(x+1, y) & Breeze(x, y+1)) - for simplicity
+
+def wumpus_rule(x, y) {
+    var p = logic.soft_predicate("Pit", x, y)
+    var bx = logic.soft_predicate("Breeze", x + 1, y)
+    var by = logic.soft_predicate("Breeze", x, y + 1)
+    
+    # Only add if neighbors are in bounds
+    if (x + 1 < 2) and (y + 1 < 2) {
+        return p >> (bx & by)
+    }
+    if (x + 1 < 2) { return p >> bx }
+    if (y + 1 < 2) { return p >> by }
+    return p >> p # Trivial
+}
+
+reasoner.add_rule(wumpus_rule)
+
+# Facts: We observe Breeze at (0,1) is FALSE, so there can be NO Pit at (0,0)
+# Actually, let's force a Pit at (0,0) and see if Breeze(0,1) goes up.
+# Initialize Pit(0,0) to 1.0 (Fixed Fact)
+reasoner.variables["Pit_0_0"] = tensor([0.99], false)
+
+print("Initial Breeze(0,1): " + str(reasoner.get_var("Breeze", 0, 1)))
+
+reasoner.train(50, "sgd", 0.5)
+
+print("Final Breeze(0,1): " + str(reasoner.variables["Breeze_0_1"]))
+print("Final Breeze_1_0: " + str(reasoner.variables["Breeze_1_0"]))

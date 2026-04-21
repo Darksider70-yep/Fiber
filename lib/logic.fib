@@ -50,6 +50,40 @@ def exists(domain, predicate) {
     return false
 }
 
+# --- Differentiable Quantifiers (Fuzzy Logic) ---
+
+def fuzzy_forall(domain, predicate, norm="product") {
+    # Aggregates truth using T-Norm (And)
+    var syms = []
+    var mappings = {}
+    for i = 0 to (len(domain) - 1) {
+        var name = "v" + str(i)
+        append(syms, name)
+        mappings[name] = predicate(domain[i])
+    }
+    
+    if len(syms) == 0 { return tensor(1.0) }
+    
+    var e = expr(str_join(syms, " & "))
+    return logic_to_loss(e, mappings, norm)
+}
+
+def fuzzy_exists(domain, predicate, norm="product") {
+    # Aggregates truth using S-Norm (Or)
+    var syms = []
+    var mappings = {}
+    for i = 0 to (len(domain) - 1) {
+        var name = "v" + str(i)
+        append(syms, name)
+        mappings[name] = predicate(domain[i])
+    }
+    
+    if len(syms) == 0 { return tensor(0.0) }
+    
+    var e = expr(str_join(syms, " | "))
+    return logic_to_loss(e, mappings, norm)
+}
+
 # -----------------------------
 # Knowledge Base (Resolution-based)
 # -----------------------------
@@ -66,6 +100,7 @@ class KnowledgeBase {
 
     def ask(query) {
         # Proof by contradiction: KB & ~query must be unsatisfiable
+        if len(this.facts) == 0 { return false }
         var kb_sentence = this.facts[0]
         for i = 1 to (len(this.facts) - 1) {
             kb_sentence = kb_sentence & this.facts[i]
@@ -73,8 +108,6 @@ class KnowledgeBase {
         
         var combined = kb_sentence & (~query)
         var result = logic_sat(combined)
-        # print("DEBUG - Combined: " + str(combined))
-        # print("DEBUG - Result: " + str(result))
         
         # If result is False, it's unsatisfiable -> Proof complete!
         if result == false {
@@ -88,15 +121,166 @@ class KnowledgeBase {
     }
 }
 
+class FuzzyKnowledgeBase extends KnowledgeBase {
+    def init() {
+        this.facts = [] # List of [expr, confidence_tensor]
+    }
+
+    def tell(sentence, confidence=None) {
+        if confidence == None { confidence = tensor(1.0) }
+        append(this.facts, [sentence, confidence])
+    }
+
+    def ask_differentiable(query, norm="product") {
+        # Returns a truth tensor for the query given the facts
+        # Simplistic version: Truth(Query) = Loss(Facts >> Query)
+        if len(this.facts) == 0 { return tensor(0.0) }
+        
+        var mappings = {}
+        var kb_expr = None
+        
+        for i = 0 to (len(this.facts) - 1) {
+            var f_name = "f" + str(i)
+            var f_pair = this.facts[i]
+            mappings[f_name] = f_pair[1]
+            
+            # We treat the fact as (Symbol_f_i <=> Actual_Expr_i)
+            # But for simplicity, we just use the fact expression if it's symbolic
+            # and map its symbols. 
+            # Better: KB is a conjunction of facts.
+            if kb_expr == None {
+                kb_expr = f_pair[0]
+            } else {
+                kb_expr = kb_expr & f_pair[0]
+            }
+        }
+        
+        # We want to know how much (KB >> Query) is true
+        return as_loss(kb_expr >> query, mappings, norm)
+    }
+}
+
 # -----------------------------
-# AI Training Bridge
+# AI Training Framework
 # -----------------------------
 
 def as_loss(expr, mappings, norm="product") {
-    # expr: symbolic logic
-    # mappings: dict of {symbol_name: tensor}
-    # norm: "product", "godel", "lukasiewicz"
     return logic_to_loss(expr, mappings, norm)
+}
+
+class Constraint {
+    def init(expression, weight=1.0, norm="product") {
+        this.expr = expression
+        this.weight = weight
+        this.norm = norm
+    }
+
+    def truth(mappings) {
+        var t = logic_to_loss(this.expr, mappings, this.norm)
+        # Stability: clamp truth to [0, 1]
+        try {
+            if t > 1.0 { return tensor(1.0) }
+            if t < 0.0 { return tensor(0.0) }
+        } catch { } # If it's a tensor, comparison might work or return a mask
+        return t
+    }
+
+    def loss(mappings) {
+        return (1.0 - this.truth(mappings)) * this.weight
+    }
+}
+
+class LogicTrainer {
+    def init(optimizer=None) {
+        this.constraints = []
+        this.opt = optimizer
+    }
+
+    def add(expression, weight=1.0, norm="product") {
+        append(this.constraints, Constraint(expression, weight, norm))
+    }
+
+    def get_total_loss(mappings) {
+        var total = tensor(0.0, true)
+        for c in this.constraints {
+            total = total + c.loss(mappings)
+        }
+        return total
+    }
+
+    def update(mappings) {
+        if this.opt == None { return }
+        var loss = this.get_total_loss(mappings)
+        this.opt.zero_grad()
+        backward(loss)
+        this.opt.step()
+        return loss
+    }
+}
+
+# --- Relational/Wumpus Utilities ---
+
+def soft_predicate(name, x, y=None) {
+    if y == None {
+        return expr(name + "_" + str(x))
+    }
+    return expr(name + "_" + str(x) + "_" + str(y))
+}
+
+class RelationalReasoner {
+    def init(width, height) {
+        this.w = width
+        this.h = height
+        this.variables = {} # "Pit(0,1)" -> tensor
+        this.trainer = LogicTrainer()
+    }
+
+    def get_var(name, x, y, trainable=true) {
+        var key = name + "_" + str(x) + "_" + str(y)
+        var val = this.variables[key]
+        if val == None {
+            val = tensor([0.5], trainable)
+            this.variables[key] = val
+        }
+        return val
+    }
+
+    def add_rule(expression_factory, weight=1.0) {
+        # expression_factory is a function that takes $(x,y)$ and returns a symbolic expr
+        # We apply it to all cells (forall x, y)
+        for x = 0 to (this.w - 1) {
+            for y = 0 to (this.h - 1) {
+                var e = expression_factory(x, y)
+                this.trainer.add(e, weight)
+                
+                # Discovery: ensure all symbols in expr are in variables
+                var syms = logic_symbols(e)
+                for s in syms {
+                    if this.variables[s] == None {
+                        this.variables[s] = tensor([0.5], true)
+                    }
+                }
+            }
+        }
+    }
+
+    def train(epochs, opt_type="sgd", lr=0.01) {
+        var params = []
+        var keys = dict_keys(this.variables)
+        for k in keys {
+            append(params, this.variables[k])
+        }
+        
+        var opt = optimizer(params, opt_type, lr)
+        this.trainer.opt = opt
+        
+        for i = 1 to epochs {
+            var loss = this.trainer.update(this.variables)
+            if (i % 10 == 0) or (i == 1) {
+                print("Relational Training Step " + str(i) + " | Loss: " + str(loss))
+            }
+        }
+    }
 }
 
 
