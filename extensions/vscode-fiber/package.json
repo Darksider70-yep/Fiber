@@ -2,7 +2,7 @@
     "name": "fiber-vscode",
     "displayName": "Fiber: High-Performance Neuro-Symbolic IDE",
     "description": "Professional support for the Fiber language: High-performance Neural & Symbolic computing.",
-    "version": "4.1.1",
+    "version": "4.1.2",
     "publisher": "daksh-gehlot",
     "main": "./src/extension.js",
     "engines": {
