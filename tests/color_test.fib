@@ -1,0 +1,4 @@
+import terminal
+import theme
+theme.set_theme(theme.emerald_theme())
+theme.print_success("Success Works")

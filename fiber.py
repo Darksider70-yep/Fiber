@@ -115,7 +115,7 @@ def doctor():
             print(f"{status} {module:<12} | {feature:<20}")
     
     print("-" * 40)
-    print(f"Fiber Version: 4.0.1-emerald")
+    print(f"Fiber Version: 4.1.0-emerald")
     print("Report Complete.")
 
 def run_project(path):
@@ -168,7 +168,7 @@ if __name__ == "__main__":
             from fiber import builder
             builder.run_build(cli_filename)
         elif cmd in ["-v", "--version"]:
-            print("Fiber v4.0.1-emerald")
+            print("Fiber v4.1.0-emerald")
         else:
             # Default to running the file provided
             run_project(sys.argv[1])

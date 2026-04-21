@@ -45,6 +45,7 @@ class Parser:
     # STATEMENTS
     # -------------------------------------------------
     def statement(self):
+        self.skip_newlines()
         t = self.current()
 
         # ---------------- IMPORT ----------------
@@ -535,12 +536,16 @@ class Parser:
             while True:
                 if self.current().type == "LPAREN":
                     self.eat("LPAREN")
+                    self.skip_newlines()
                     args = []
                     if self.current().type != "RPAREN":
                         while True:
+                            self.skip_newlines()
                             args.append(self.expr())
+                            self.skip_newlines()
                             if self.current().type == "COMMA":
                                 self.eat("COMMA")
+                                self.skip_newlines()
                                 continue
                             break
                     self.eat("RPAREN")

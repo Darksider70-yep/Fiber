@@ -1,0 +1,91 @@
+# 🎭 Fiber Theme Management Library
+# Version: 4.1.0-emerald
+# Manages consistent UI styling across the Fiber ecosystem.
+
+import terminal
+
+class Theme {
+    def init(name, primary, header, success, warning, error, dim) {
+        this.name = name
+        this.primary = primary
+        this.header = header
+        this.success = success
+        this.warning = warning
+        this.error = error
+        this.dim = dim
+    }
+
+    def fmt_primary(text) { return terminal.style(text, this.primary) }
+    def fmt_header(text) { return terminal.style(text, this.header) }
+    def fmt_success(text) { return terminal.style(text, this.success) }
+    def fmt_warning(text) { return terminal.style(text, this.warning) }
+    def fmt_error(text) { return terminal.style(text, this.error) }
+    def fmt_dim(text) { return terminal.style(text, this.dim) }
+}
+
+# --- Standard Themes ---
+
+def emerald_theme() {
+    return Theme(
+        "Emerald",
+        terminal.BRIGHT_GREEN,  # Primary
+        terminal.BOLD + terminal.BRIGHT_WHITE, # Header
+        terminal.GREEN,         # Success
+        terminal.YELLOW,        # Warning
+        terminal.RED,           # Error
+        terminal.GRAY           # Dim
+    )
+}
+
+def ocean_theme() {
+    return Theme(
+        "Ocean",
+        terminal.BRIGHT_BLUE,
+        terminal.BOLD + terminal.BRIGHT_CYAN,
+        terminal.CYAN,
+        terminal.MAGENTA,
+        terminal.RED,
+        terminal.GRAY
+    )
+}
+
+def sunset_theme() {
+    return Theme(
+        "Sunset",
+        terminal.BRIGHT_YELLOW,
+        terminal.BOLD + terminal.RED,
+        terminal.GREEN,
+        terminal.BRIGHT_RED,
+        terminal.RED,
+        terminal.DIM
+    )
+}
+
+# --- Theme Management ---
+
+var current = emerald_theme()
+
+def set_theme(theme_obj) {
+    current = theme_obj
+}
+
+def get_theme() {
+    return current
+}
+
+# UI Printing Helpers
+def print_header(msg) { print(current.fmt_header(str(msg))) }
+def print_success(msg) { print(current.fmt_success("[OK] " + str(msg))) }
+def print_warning(msg) { print(current.fmt_warning("[WARN] " + str(msg))) }
+def print_error(msg) { print(current.fmt_error("[ERR] " + str(msg))) }
+def print_dim(msg) { print(current.fmt_dim(str(msg))) }
+
+def print_primary(msg) { print(current.fmt_primary(str(msg))) }
+
+# Utility for displaying a banner
+def banner(title) {
+    var line = "========================================"
+    print_header(line)
+    print_primary("  " + title)
+    print_header(line)
+}

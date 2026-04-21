@@ -13,13 +13,18 @@ try:
 except ImportError:
     readline = None
 
-PROMPT = 'fiber> '
-CONTINUE_PROMPT = '...    '
+COLOR_RESET = "\x1b[0m"
+COLOR_PRIMARY = "\x1b[92m" # Bright Green
+COLOR_ERROR = "\x1b[31m"   # Red
+COLOR_DIM = "\x1b[90m"     # Gray
+
+PROMPT = f'{COLOR_PRIMARY}fiber>{COLOR_RESET} '
+CONTINUE_PROMPT = f'{COLOR_DIM}...    {COLOR_RESET}'
 
 def start_repl():
     interp = Interpreter()
-    print('Fiber Emerald REPL v4.0')
-    print('Tip: Type "exit" to quit, ".help" for help.')
+    print(f'{COLOR_PRIMARY}Fiber Emerald REPL v4.1{COLOR_RESET}')
+    print(f'{COLOR_DIM}Tip: Type "exit" to quit, ".help" for help.{COLOR_RESET}')
     
     buffer = ''
     while True:
@@ -60,5 +65,5 @@ def start_repl():
                 # Basic heuristic for multiline: if it looks like we need more, don't crash
                 continue
             
-            print(f"Error: {e}")
+            print(f"{COLOR_ERROR}Error: {e}{COLOR_RESET}")
             buffer = ''
