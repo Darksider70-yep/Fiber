@@ -2,7 +2,7 @@
 
 All notable changes to the Fiber language and its standard library will be documented in this file.
 
-## [4.0.0] - "Emerald" - 2026-04-21
+## [4.0.1] - "Emerald" - 2026-04-21
 ### Added
 - **Core Language**:
     - Introduced the `>>` (Implies) operator for symbolic logic expressions.

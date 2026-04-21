@@ -2,7 +2,7 @@
 
 **Fiber** is a next-generation programming language designed to bridge the gap between high-level symbolic logic and low-level numerical computation. It provides a first-class developer experience for AI researchers, data scientists, and systems engineers.
 
-> **Status**: v4.0.0-emerald 🌿💎 (Release Candidate)
+> **Status**: v4.0.1-emerald 🌿💎 (Stable)
 
 ---
 
@@ -23,7 +23,7 @@
 ### **1. Portable Installation (Recommended)**
 Fiber is designed to be truly portable. You don't need Python or any external dependencies to run it.
 
-1.  Download the official **`fiber.exe`** from the **[v4.0.0 Release Page](https://github.com/Darksider70-yep/Fiber/releases/tag/v4.0.0)**.
+1.  Download the official **`fiber.exe`** from the **[v4.0.1 Release Page](https://github.com/Darksider70-yep/Fiber/releases/tag/v4.0.1)**.
 2.  Add the folder containing `fiber.exe` to your system **Environment Path**.
 3.  Run `fiber your_script.fib` from any terminal!
 

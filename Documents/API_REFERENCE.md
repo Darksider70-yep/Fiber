@@ -1,4 +1,4 @@
-# 📗 Fiber API Reference (ver 4.0.0)
+# 📗 Fiber API Reference (ver 4.0.1)
 
 This document provides a comprehensive reference for the Fiber Standard Library (**LibFiber**). All modules listed here are embedded within the standalone Fiber executable.
 

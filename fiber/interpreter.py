@@ -26,7 +26,7 @@ class Interpreter:
         self.global_env = Environment()
         self.module_cache = {}
         self.exec_dir_stack = [os.getcwd()]
-        self.version = "4.0.0-emerald"
+        self.version = "4.0.1-emerald"
         
         # -----------------------------
         # Core & Versioning

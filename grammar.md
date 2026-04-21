@@ -1,6 +1,6 @@
 # Fiber Language Grammar (Locked Specification)
 
-Version: 4.0.0
+Version: 4.0.1
 Status: RELEASED  
 
 This document defines the authoritative grammar of the Fiber programming language. Any change to the parser or interpreter MUST conform to this specification.
@@ -39,7 +39,7 @@ primary ::=
 
 ---
 
-## 10. Dictionaries (v0.2)
+## 10. Dictionaries (v4.0.1)
 
 dict_literal ::= "{" [ expr ":" expr { "," expr ":" expr } ] "}"
 
