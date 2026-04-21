@@ -50,7 +50,7 @@ print("Initial Breeze(1, 0) logic: " + str(reasoner.get_var("Breeze", 1, 0)))
 # 5. Train the Knowledge Base
 # Fiber will use the Pit->Breeze rule to update the Breeze probabilities
 print("\n--- Starting Relational Training ---")
-reasoner.train(100, "sgd", 0.1)
+reasoner.train(50, "sgd", 0.05)
 print("--- Training Complete ---\n")
 
 # 6. Verify Logically Inferred Facts
