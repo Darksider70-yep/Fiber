@@ -12,6 +12,7 @@ Official Visual Studio Code extension for the **Fiber** programming language. Fi
   - `fexpr`: Create and differentiate symbolic expressions.
   - `fmatch`: Professional pattern-matching boilerplate.
 - **🌑 Fiber Branded Dark Theme**: A premium, custom-designed dark theme optimized for neuro-symbolic development.
+- **🎨 Professional Terminal UI & Themes**: Built-in libraries (`terminal.fib`, `theme.fib`) for creating colored console applications and high-visibility report systems.
 - **⚙️ Integrated Language Support**: Auto-bracket matching, indentation rules, and intelligent comment toggling.
 
 ## 🛠️ Getting Started

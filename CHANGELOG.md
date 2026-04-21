@@ -2,6 +2,22 @@
 
 All notable changes to the Fiber language and its standard library will be documented in this file.
 
+## [4.1.0] - "Emerald" - 2026-04-21
+### Added
+- **Standard Library**:
+    - `lib/terminal.fib`: Low-level ANSI styling library.
+    - `lib/theme.fib`: Professional theme management with presets (Emerald, Ocean, Sunset).
+- **Tooling**:
+    - New colorized REPL with themed banner and error highlighting.
+- **Showcase**:
+    - `examples/color_showcase.fib`: A complete demonstration of the new UI system.
+
+### Fixed
+- **Parser**: Fixed critical bug preventing function calls and lists from spanning multiple lines.
+- **Compatibility**: Replaced Unicode icons with ASCII equivalents in libraries to support all Windows terminal codepages.
+
+---
+
 ## [4.0.1] - "Emerald" - 2026-04-21
 ### Added
 - **Core Language**:
