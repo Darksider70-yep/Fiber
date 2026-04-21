@@ -1,6 +1,6 @@
 # Fiber Language Grammar (Locked Specification)
 
-Version: 0.2  
+Version: 4.0.0
 Status: RELEASED  
 
 This document defines the authoritative grammar of the Fiber programming language. Any change to the parser or interpreter MUST conform to this specification.
@@ -59,10 +59,15 @@ The following builtins are formally integrated into the core language namespace 
 `solve(E, V)` : Returns a list of symbolic roots for `E = 0` with respect to `V`.  
 `simplify(E)` : Algebraically simplifies expression `E`.  
 `subst(E, M)` : Returns numeric value of `E` by substituting variables according to mapping `M` (Dictionary).
+`logic_symbols(E)` : Returns a list of all variable names (strings) found in expression `E`.
 
 ### 21.2 Tensor Operations
 `tensor(D)` : Converts nested list `D` into a multi-dimensional numerical object.  
 `matmul(A, B)` : Performs matrix multiplication between tensors `A` and `B`.
+
+### 21.3 Logic Operations
+`A >> B` : Symbolic Implies (equivalent to `!A | B`).
+`A & B`, `A | B`, `~A` : Symbolic AND, OR, NOT.
 
 ---
 

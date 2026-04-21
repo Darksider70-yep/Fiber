@@ -1,0 +1,68 @@
+# 🏹 Fiber AI: Wumpus World Relational Reasoning Demo
+# Version: 4.0.0-emerald
+# 
+# This example demonstrates the powerful new Neuro-Symbolic 
+# Relational Reasoner in Fiber v4. We define rules for a grid
+# and train probabilistic facts based on logical constraints.
+
+import logic
+
+print("=== Fiber Wumpus World AI Showcase ===")
+
+# 1. Initialize a 4x4 Grid Reasoner
+var reasoner = logic.RelationalReasoner(4, 4)
+
+# 2. Define Logical Rules of the World
+# Rule: If a cell has a Pit, all adjacent cells MUST have a Breeze.
+# Algebraic Form: Pit(x, y) >> ForAll( Neighbors(x,y), Breeze )
+
+def pit_breeze_rule(x, y) {
+    var pit = logic.soft_predicate("Pit", x, y)
+    
+    # Define neighbors
+    var neighbors = []
+    if x > 0 { append(neighbors, logic.soft_predicate("Breeze", x - 1, y)) }
+    if x < 3 { append(neighbors, logic.soft_predicate("Breeze", x + 1, y)) }
+    if y > 0 { append(neighbors, logic.soft_predicate("Breeze", x, y - 1)) }
+    if y < 3 { append(neighbors, logic.soft_predicate("Breeze", x, y + 1)) }
+    
+    # The rule: Pit at (x,y) implies Breeze in ALL neighbors
+    # construction: pit >> (n1 & n2 & n3 & n4)
+    var all_breezes = neighbors[0]
+    for i = 1 to (len(neighbors) - 1) {
+        all_breezes = all_breezes & neighbors[i]
+    }
+    
+    return pit >> all_breezes
+}
+
+# Add the rule to the reasoner (applied to all x,y coordinates)
+reasoner.add_rule(pit_breeze_rule)
+
+# 3. Add Some Hard Evidence (Observations)
+# We KNOW there is a Pit at (1, 1)
+reasoner.variables["Pit_1_1"] = tensor([1.0], false) # Fixed fact
+
+# 4. Query Initial State
+# Before training, Breeze probabilities are default (0.5)
+print("Initial Breeze(1, 0) logic: " + str(reasoner.get_var("Breeze", 1, 0)))
+
+# 5. Train the Knowledge Base
+# Fiber will use the Pit->Breeze rule to update the Breeze probabilities
+print("\n--- Starting Relational Training ---")
+reasoner.train(100, "sgd", 0.1)
+print("--- Training Complete ---\n")
+
+# 6. Verify Logically Inferred Facts
+var b1 = reasoner.variables["Breeze_1_0"]
+var b2 = reasoner.variables["Breeze_2_1"]
+var b3 = reasoner.variables["Breeze_0_1"]
+
+print("Inferred Breeze(1, 0): " + str(b1))
+print("Inferred Breeze(2, 1): " + str(b2))
+print("Inferred Breeze(0, 1): " + str(b3))
+
+# We can also check a cell far away (should remain ~0.5)
+print("Inferred Breeze(3, 3): " + str(reasoner.variables["Breeze_3_3"]))
+
+print("\nSuccess: Logical inference through differentiable neuro-symbolic training!")

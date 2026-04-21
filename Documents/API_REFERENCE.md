@@ -1,4 +1,4 @@
-# 📗 Fiber API Reference (ver 0.3b)
+# 📗 Fiber API Reference (ver 4.0.0)
 
 This document provides a comprehensive reference for the Fiber Standard Library (**LibFiber**). All modules listed here are embedded within the standalone Fiber executable.
 
@@ -78,3 +78,22 @@ HTTP and URL utilities.
 ## 🎲 `lib/random.fib` & `lib/regex.fib`
 - **Random**: `rand_int(a, b)`, `choice(list)`, `shuffle(list)`.
 - **Regex**: `match(pattern, string)`, `search(pattern, string)`, `replace(pattern, repl, string)`.
+
+---
+
+## 🧩 `lib/logic.fib` - Neuro-Symbolic Logic AI
+Advanced utilities for probabilistic and relational reasoning.
+
+### Logic Reasoning
+- **`expr(S)`**: Parses a string into a symbolic logic expression.
+- **`logic_symbols(E)`**: Returns all variable names in expression `E`.
+- **`as_loss(E, M, N)`**: Converts logic `E` to a differentiable tensor using mapping `M` and norm `N`.
+
+### Neuro-Symbolic Classes
+- **`LogicTrainer`**: Automated optimizer for logical constraints.
+- **`RelationalReasoner(w, h)`**: Grid-based reasoner for problems like Wumpus World.
+- **`FuzzyKnowledgeBase`**: Differentiable KB supporting confidence-weighted facts.
+
+### Quantifiers
+- **`fuzzy_forall(domain, predicate)`**: Differentiable Universal quantifier.
+- **`fuzzy_exists(domain, predicate)`**: Differentiable Existential quantifier.
