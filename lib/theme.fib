@@ -99,11 +99,11 @@ def get_theme() {
 
 def get_theme_by_name(name) {
     var n = string_lower(str(name))
-    if (n == "emerald") return emerald_theme()
-    if (n == "ocean") return ocean_theme()
-    if (n == "sunset") return sunset_theme()
-    if (n == "fall") return fall_theme()
-    if (n == "astro") return astro_theme()
+    if (n == "emerald") { return emerald_theme() }
+    if (n == "ocean") { return ocean_theme() }
+    if (n == "sunset") { return sunset_theme() }
+    if (n == "fall") { return fall_theme() }
+    if (n == "astro") { return astro_theme() }
     return emerald_theme()
 }
 
