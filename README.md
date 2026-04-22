@@ -35,7 +35,7 @@ Get the professional developer experience:
 ### **3. Python Installation (Source)**
 If you wish to run Fiber directly from source:
 ```bash
-python main-DARKZONE.py path/to/script.fib
+python fiber.py path/to/script.fib
 ```
 
 ---
